@@ -1,21 +1,35 @@
 {
   "mappings": [
     {
-      "groupNamePattern": "^Trading.*|.*Crypto.*|.*BTC.*|.*ETH.*",
-      "persona": "Trading",
-      "description": "Groups with Trading, Crypto, BTC, or ETH in the name"
+      "groupNamePattern": "^Trading\\s*Expert.*|.*Trade\\s*Analysis.*",
+      "persona": "TradingExpert",
+      "description": "Premium trading analysis groups - full market intelligence",
+      "priority": 1
     },
     {
-      "groupNamePattern": "^Dev.*|.*Development.*|.*Code.*|.*Engineering.*",
+      "groupNamePattern": "^Trading.*|.*Crypto.*|.*BTC.*|.*ETH.*|.*Signals.*",
+      "persona": "Trading",
+      "description": "Groups with Trading, Crypto, BTC, ETH, or Signals in the name",
+      "priority": 2
+    },
+    {
+      "groupNamePattern": "^Dev.*|.*Development.*|.*Code.*|.*Engineering.*|.*GitHub.*",
       "persona": "Dev",
-      "description": "Groups with Dev, Development, Code, or Engineering in the name"
+      "description": "Groups with Dev, Development, Code, Engineering, or GitHub in the name",
+      "priority": 3
     },
     {
       "groupNamePattern": ".*",
       "persona": "General",
-      "description": "Default fallback for all other groups"
+      "description": "Default fallback for all other groups",
+      "priority": 99
     }
   ],
+  "groupIdOverrides": {
+    "_comment": "Direct group ID to persona mapping (highest priority)",
+    "example_group_id@g.us": "TradingExpert"
+  },
   "privateMessagePersona": "General",
-  "defaultPersona": "General"
+  "defaultPersona": "General",
+  "enablePersonaLogging": true
 }

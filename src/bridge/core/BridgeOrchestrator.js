@@ -25,6 +25,9 @@ const repositories = require('../db/repositories');
 // Agent Integration Layer (Guard, Memory, Skills, SEASP)
 const { initializeAgentIntegration, getAgentIntegration } = require('../agent/AgentIntegration');
 
+// Persona Router (Context-Aware Persona Selection)
+const { getPersonaRouter, initializePersonaRouter } = require('../agent/PersonaRouter');
+
 // Playwright MCP config path
 const PLAYWRIGHT_MCP_CONFIG = 'C:\\Users\\asaf1\\.claude\\plugins\\marketplaces\\claude-plugins-official\\external_plugins\\playwright\\.mcp.json';
 
@@ -39,6 +42,7 @@ class BridgeOrchestrator {
     this.initialized = false;
     this.repositories = null;
     this.agentIntegration = null; // Agent Integration Layer (Guard, Memory, Skills)
+    this.personaRouter = null; // Persona Router (Context-Aware Persona Selection)
   }
 
   /**
@@ -79,6 +83,16 @@ class BridgeOrchestrator {
     } catch (error) {
       logger.warn('Agent Integration init failed (non-fatal)', { error: error.message });
       // Continue without agent features - fallback to basic mode
+    }
+
+    // Initialize Persona Router
+    try {
+      this.personaRouter = initializePersonaRouter();
+      logger.info('Persona Router initialized', {
+        personas: this.personaRouter.getAllPersonas().map(p => p.name)
+      });
+    } catch (error) {
+      logger.warn('Persona Router init failed (non-fatal)', { error: error.message });
     }
 
     // Setup event handlers
@@ -227,8 +241,24 @@ class BridgeOrchestrator {
    * Handle regular command
    */
   async handleCommand(parsed, projectId, projectName) {
-    const { messageData, groupId, senderPhone, senderName } = parsed;
+    const { messageData, groupId, senderPhone, senderName, groupName, isGroupMessage } = parsed;
     const command = messageData.command;
+
+    // Route to appropriate persona based on group context
+    let personaContext = null;
+    if (this.personaRouter) {
+      const routing = this.personaRouter.route({
+        groupId,
+        groupName,
+        isGroupMessage: isGroupMessage !== false
+      });
+      personaContext = routing;
+      logger.info('Persona routing', {
+        personaName: routing.personaName,
+        matchType: routing.matchType,
+        groupName
+      });
+    }
 
     // Classify operation type
     const operationType = messageParser.classifyOperation(command, this.config);
@@ -255,7 +285,7 @@ class BridgeOrchestrator {
       return;
     }
 
-    // Add to queue
+    // Add to queue with persona context
     const queueItem = await commandQueue.enqueue(projectId, {
       text: command,
       type: 'command',
@@ -263,8 +293,10 @@ class BridgeOrchestrator {
       senderName,
       operationType,
       groupId,
+      groupName,
       messageId: parsed.messageId,
-      projectName
+      projectName,
+      personaContext // Include persona routing info
     });
 
     // Notify if queue position > 1
@@ -515,6 +547,16 @@ class BridgeOrchestrator {
           });
         }
 
+        // Apply persona context if available
+        if (item.personaContext && this.personaRouter) {
+          const personaName = item.personaContext.personaName;
+          enhancedCommand = this.personaRouter.buildPersonaPrompt(personaName, enhancedCommand);
+          logger.info('Prompt enhanced with persona', {
+            persona: personaName,
+            prioritySkill: item.personaContext.persona?.prioritySkill
+          });
+        }
+
         // Log classification for YELLOW commands
         if (preResult.classification?.level === 'YELLOW') {
           logger.info('YELLOW command - executing with logging', {
@@ -599,7 +641,7 @@ class BridgeOrchestrator {
       let processedResult = result;
 
       if (this.agentIntegration && preResult) {
-        processedResult = await this.agentIntegration.postExecution(result, preResult, item.command);
+        processedResult = await this.agentIntegration.postExecution(result, preResult, item.command, item.personaContext);
 
         // Check if self-correction suggested a retry
         if (processedResult.selfCorrection?.shouldRetry) {

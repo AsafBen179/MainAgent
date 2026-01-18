@@ -179,18 +179,28 @@ class AgentIntegration {
 
   /**
    * Post-execution hook: Result storage + Self-correction trigger
+   * @param {Object} result - Execution result
+   * @param {Object} preResult - Pre-execution result
+   * @param {string} originalCommand - Original command
+   * @param {Object} personaContext - Optional persona context
    */
-  async postExecution(result, preResult, originalCommand) {
+  async postExecution(result, preResult, originalCommand, personaContext = null) {
     const { executionMetadata } = preResult;
     const duration = Date.now() - (executionMetadata?.startTime || Date.now());
+
+    // Extract persona info for scoped storage
+    const personaName = personaContext?.personaName || 'General';
+    const memoryScope = personaContext?.persona?.memoryScope || 'general';
 
     logger.info('Post-execution processing', {
       success: result.success,
       duration,
-      outputLength: result.output?.length
+      outputLength: result.output?.length,
+      persona: personaName,
+      memoryScope
     });
 
-    // Save task history
+    // Save task history with persona scope
     this.knowledgeBase.saveTaskHistory({
       task_type: executionMetadata?.taskType || 'command_execution',
       task_description: executionMetadata?.taskDescription || originalCommand,
@@ -199,7 +209,9 @@ class AgentIntegration {
       output: result.output,
       error: result.error,
       duration_ms: duration,
-      lessons_applied: preResult.relevantLessons?.map(l => l.id)
+      lessons_applied: preResult.relevantLessons?.map(l => l.id),
+      category: memoryScope, // Persona-scoped category
+      persona: personaName
     });
 
     // Check for failure patterns that might trigger self-correction
@@ -215,10 +227,11 @@ class AgentIntegration {
 
     // Auto-save lesson if this was a significant task
     if (result.shouldSaveLesson || (!result.success && result.error)) {
-      const lesson = this.extractLesson(result, originalCommand, duration);
+      const lesson = this.extractLesson(result, originalCommand, duration, memoryScope);
       if (lesson) {
+        lesson.persona = personaName;
         const lessonId = this.knowledgeBase.saveLesson(lesson);
-        logger.info('Auto-saved lesson', { lessonId, success: result.success });
+        logger.info('Auto-saved lesson', { lessonId, success: result.success, persona: personaName });
       }
     }
 
@@ -272,7 +285,7 @@ class AgentIntegration {
   /**
    * Extract lesson from execution result
    */
-  extractLesson(result, command, duration) {
+  extractLesson(result, command, duration, category = 'general') {
     // Only extract meaningful lessons
     if (!result.error && result.success) {
       // Success case - only save if it was complex
@@ -282,7 +295,8 @@ class AgentIntegration {
           task_description: command.substring(0, 500),
           success: true,
           lesson_summary: `Successfully completed in ${Math.round(duration / 1000)}s`,
-          time_to_resolution_ms: duration
+          time_to_resolution_ms: duration,
+          category // Persona-scoped category
         };
       }
       return null;
@@ -295,7 +309,8 @@ class AgentIntegration {
       success: false,
       error_message: result.error?.substring(0, 1000),
       lesson_summary: `Failed: ${result.error?.substring(0, 200)}`,
-      time_to_resolution_ms: duration
+      time_to_resolution_ms: duration,
+      category // Persona-scoped category
     };
   }
 
