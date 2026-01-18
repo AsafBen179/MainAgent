@@ -1,148 +1,186 @@
-# Unified Multi-Persona WhatsApp Agent
+# WhatsApp-Claude Bridge
 
-An autonomous WhatsApp agent with multi-persona support, self-learning memory, and layered security guards.
+A WhatsApp bot that connects to Claude Code CLI for autonomous task execution.
 
 ## Security Notice
 
-> **This is an autonomous agent project. All sensitive data is strictly excluded via `.gitignore`.**
+> **All sensitive data is strictly excluded via `.gitignore`.**
 >
-> The following are NEVER committed to this repository:
+> The following are NEVER committed:
 > - WhatsApp session tokens (`sessions/`)
-> - Local databases (`memory/*.db`)
+> - Local databases (`data/*.db`, `memory/*.db`)
 > - Environment variables (`.env`)
 > - API keys and credentials
 
 ## Architecture
 
 ```
-WhatsApp Message
-       |
-       v
-+------------------+
-|  WhatsAppClient  |  (whatsapp-web.js)
-+------------------+
-       |
-       v
-+------------------+
-|  MessageRouter   |  Internal routing (no HTTP calls)
-+------------------+
-       |
-       v
-+------------------+
-| GroupPersonaMapper|  Maps group -> persona
-+------------------+
-       |
-       v
-+------------------+     +------------------+
-| HardenedGuard    | --> | Persona Policy   |
-+------------------+     +------------------+
-       |
-       v
-+------------------+
-|  KnowledgeBase   |  SQLite memory
-+------------------+
-       |
-       v
-+------------------+
-|   Agent Core     |  Process & respond
-+------------------+
+┌─────────────────┐     Webhook      ┌─────────────────┐     spawn      ┌─────────────────┐
+│  WhatsApp API   │ ───────────────> │     Bridge      │ ─────────────> │   Claude CLI    │
+│   (port 3000)   │                  │   (port 3001)   │                │                 │
+│                 │ <─────────────── │                 │ <───────────── │                 │
+│ whatsapp-web.js │     Response     │  Orchestrator   │    stdout      │  Code execution │
+└─────────────────┘                  └─────────────────┘                └─────────────────┘
+        │
+        │ QR Code
+        v
+   ┌─────────┐
+   │ Terminal│
+   └─────────┘
 ```
 
-## Personas
+## Components
 
-| Persona | Description | Guard Policy | Skills |
-|---------|-------------|--------------|--------|
-| **Trading** | Crypto market analysis | Restrictive | web-operator, crypto-news |
-| **Dev** | Full development access | Standard | All skills |
-| **General** | Information retrieval | Highly restrictive | web-operator only |
+### WhatsApp API (`src/whatsapp-api/`)
+- **Port:** 3000
+- **Purpose:** WhatsApp Web connection via whatsapp-web.js
+- **Features:**
+  - QR code display in terminal
+  - Session persistence
+  - Message sending/receiving
+  - Webhook notifications to Bridge
+
+### Bridge (`src/bridge/`)
+- **Port:** 3001
+- **Purpose:** Claude CLI execution and response handling
+- **Features:**
+  - Webhook receiver for WhatsApp messages
+  - Claude CLI spawning (`CmdExecutor.js`)
+  - Session management per chat
+  - Output processing and summarization
+  - Permission handling for sensitive operations
 
 ## Project Structure
 
 ```
 src/
-├── index.ts              # Unified entry point
-├── bridge/
-│   ├── WhatsAppClient.ts     # whatsapp-web.js wrapper
-│   ├── GroupPersonaMapper.ts # Group -> Persona mapping
-│   ├── MessageRouter.ts      # Internal message routing
-│   └── HardenedGuard.ts      # Persona-aware security
-├── core/
-│   ├── agent-core.ts         # Main agent logic
-│   ├── guard/                # Execution Guard
-│   ├── memory/               # Knowledge Base (SQLite)
-│   ├── evolution/            # SEASP (Self-Evolution)
-│   └── planner/              # Sequential thinking
-├── skills/
-│   ├── web-operator/         # Browser automation
-│   ├── self-correction/      # Self-correcting execution
-│   └── scrapers/             # Data scrapers
-└── utils/
-    └── logger.ts             # Centralized logging
+├── index.js                    # Unified entry point (starts both services)
+├── whatsapp-api/
+│   ├── index.js                # WhatsApp API server
+│   ├── whatsappService.js      # whatsapp-web.js wrapper
+│   ├── messageHandler.js       # Message processing
+│   ├── db/                     # WhatsApp message database
+│   └── utils/                  # Logger, validator
+└── bridge/
+    ├── index.js                # Bridge server entry
+    ├── app.js                  # Express app setup
+    ├── core/
+    │   ├── BridgeOrchestrator.js   # Main orchestration logic
+    │   └── EventBus.js             # Event system
+    ├── claude/
+    │   ├── CmdExecutor.js          # Claude CLI execution
+    │   ├── SessionManager.js       # Chat session management
+    │   ├── OutputProcessor.js      # Process CLI output
+    │   └── PermissionHandler.js    # Handle permission requests
+    ├── whatsapp/
+    │   ├── WhatsAppClient.js       # API client for WhatsApp API
+    │   ├── WebhookHandler.js       # Webhook processing
+    │   └── ResponseSender.js       # Send responses back
+    ├── db/                         # Bridge database (sql.js)
+    └── utils/                      # Config loader, logger
+
+config/
+├── bridge.config.json          # Bridge configuration
+└── allowlist.json              # Allowed users/groups
 ```
 
 ## Configuration
 
-**Persona Definitions:** `config/personas.json`
-```json
-{
-  "Trading": { "guardPolicy": "trading", "allowedSkills": ["web-operator", "crypto-news"] },
-  "Dev": { "guardPolicy": "default", "allowedSkills": ["all"] },
-  "General": { "guardPolicy": "restricted", "allowedSkills": ["web-operator"] }
-}
+### Environment Variables (`.env`)
+```bash
+# Server Ports
+PORT=3000
+BRIDGE_PORT=3001
+
+# WhatsApp Settings
+SESSION_PATH=./sessions
+AUTO_CONNECT=true
+
+# Webhook (WhatsApp API -> Bridge)
+WEBHOOK_URL=http://localhost:3001/webhook/whatsapp
+
+# WhatsApp API Connection (Bridge -> WhatsApp API)
+WHATSAPP_API_URL=http://localhost:3000
+
+# Claude CLI Base Path
+BASE_PATH=C:\YourProject
+
+# Admin phones (comma separated)
+ADMIN_PHONES=972501234567
 ```
 
-**Group Mappings:** `config/group-mappings.json`
+### Bridge Config (`config/bridge.config.json`)
 ```json
 {
-  "mappings": [
-    { "groupNamePattern": "^Trading.*|.*Crypto.*", "persona": "Trading" },
-    { "groupNamePattern": "^Dev.*|.*Development.*", "persona": "Dev" },
-    { "groupNamePattern": ".*", "persona": "General" }
-  ]
+  "server": { "port": 3001, "host": "127.0.0.1" },
+  "basePath": "C:\\YourProject",
+  "whatsappApi": { "baseUrl": "http://localhost:3000" },
+  "claudeCode": {
+    "executable": "claude",
+    "sessionTimeout": 3600000,
+    "maxConcurrentSessions": 10
+  }
 }
 ```
-
-## Guard Classification
-
-| Level | Behavior | Example |
-|-------|----------|---------|
-| GREEN | Auto-execute | `git status`, `ls`, `dir` |
-| YELLOW | Execute + log | `npm install`, `git push` |
-| RED | Requires approval | Registry edits, credentials |
-| BLACKLISTED | Never execute | Format disk, delete system files |
-
-**Key Security Feature:** Persona policy ALWAYS prevails over global policy.
 
 ## Installation
 
 ```bash
 npm install
-npm run build
 ```
 
 ## Usage
 
+### Start Both Services
 ```bash
 npm start
 ```
 
-On first run, scan the QR code with WhatsApp to authenticate.
+On first run, scan the QR code displayed in terminal with WhatsApp.
 
-## Development
-
+### Start Services Separately
 ```bash
-npm run dev    # Development mode with ts-node
-npm run watch  # TypeScript watch mode
+# Terminal 1: WhatsApp API
+npm run start:api
+
+# Terminal 2: Bridge
+npm run start:bridge
 ```
 
-## Key Features
+## Message Flow
 
-- **Multi-Persona Support:** Different capabilities per WhatsApp group
-- **Hardened Guard:** Persona-specific security policies
-- **Self-Learning Memory:** SQLite-backed knowledge base
-- **No External HTTP Calls:** All processing is internal
-- **Robust Session Handling:** Graceful recovery from auth failures
-- **Centralized Logging:** All events logged with chatId/persona context
+1. **User sends WhatsApp message** to connected number
+2. **WhatsApp API** receives message via whatsapp-web.js
+3. **Webhook sent** to Bridge at `/webhook/whatsapp`
+4. **Bridge** spawns Claude CLI with the message as prompt
+5. **Claude CLI** executes and returns output
+6. **Bridge** processes output and sends response
+7. **WhatsApp API** delivers response to user
+
+## API Endpoints
+
+### WhatsApp API (port 3000)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Health check |
+| `/api/status` | GET | Connection status |
+| `/api/qr` | GET | Get QR code |
+| `/api/connect` | POST | Initialize connection |
+| `/api/send` | POST | Send message |
+| `/docs` | GET | API documentation |
+
+### Bridge (port 3001)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/webhook/whatsapp` | POST | Receive WhatsApp webhooks |
+
+## Logs
+
+Logs are stored in `logs/`:
+- `bridge-YYYY-MM-DD.log` - Bridge activity
+- `agent-YYYY-MM-DD.log` - WhatsApp API activity
+- `error-YYYY-MM-DD.log` - Errors
 
 ## License
 
