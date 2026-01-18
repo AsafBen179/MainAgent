@@ -1,0 +1,76 @@
+{
+  "policyName": "restricted",
+  "description": "Highly restrictive policy for general persona - web browsing only",
+  "blacklist": {
+    "patterns": [
+      "format",
+      "del",
+      "rd",
+      "rm",
+      "rmdir",
+      "mkdir",
+      "md",
+      "copy",
+      "move",
+      "xcopy",
+      "robocopy",
+      "shutdown",
+      "restart",
+      "reg",
+      "net",
+      "netsh",
+      "taskkill",
+      "cipher",
+      "diskpart",
+      "bcdedit",
+      "npm",
+      "node",
+      "python",
+      "pip",
+      "git",
+      "docker",
+      "kubectl",
+      "powershell",
+      "cmd /c",
+      "bash",
+      "sh -c"
+    ],
+    "executables": [
+      "powershell",
+      "cmd",
+      "bash",
+      "sh",
+      "node",
+      "python",
+      "pip",
+      "npm",
+      "yarn",
+      "git"
+    ]
+  },
+  "classification": {
+    "green": {
+      "patterns": [
+        "^curl.*-X GET",
+        "^dir /b",
+        "^ls -la",
+        "^type.*\\.txt$",
+        "^cat.*\\.txt$",
+        "^echo"
+      ],
+      "allowedPaths": [
+        "C:\\\\MainAgent\\\\logs\\\\**"
+      ]
+    },
+    "yellow": {
+      "patterns": []
+    },
+    "red": {
+      "patterns": [
+        ".*"
+      ],
+      "requiresApproval": true,
+      "approvalTimeout": 300
+    }
+  }
+}

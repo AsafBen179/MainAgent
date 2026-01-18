@@ -1,0 +1,153 @@
+{
+  "$schema": "./security-constitution.schema.json",
+  "version": "1.0.0",
+  "description": "SEASP - Self-Evolution, Accuracy & Security Protocol Constitution",
+
+  "immutableCore": {
+    "description": "Read-only for agent - the 'Police', 'Laws', and 'Gatekeeper'",
+    "paths": [
+      "src/guard/**",
+      "config/guard_policy.json",
+      "config/security-constitution.json",
+      "src/evolution/constitution-enforcer.ts"
+    ],
+    "operations": {
+      "read": true,
+      "write": false,
+      "delete": false,
+      "execute": true
+    }
+  },
+
+  "mutableLayers": {
+    "description": "Writable for agent - skills, playbooks, and memory",
+    "paths": [
+      "src/skills/**",
+      "playbooks/**",
+      "memory/**",
+      "logs/**",
+      "screenshots/**",
+      "plans/**"
+    ],
+    "operations": {
+      "read": true,
+      "write": true,
+      "delete": true,
+      "execute": true
+    },
+    "constraints": {
+      "requiresValidation": true,
+      "forbiddenPatterns": true,
+      "gitCommitRequired": true
+    }
+  },
+
+  "forbiddenPatterns": {
+    "description": "Code patterns that will be blocked in self-written code",
+    "patterns": [
+      {
+        "name": "eval_execution",
+        "regex": "\\beval\\s*\\(",
+        "severity": "critical",
+        "reason": "Dynamic code execution is forbidden"
+      },
+      {
+        "name": "function_constructor",
+        "regex": "new\\s+Function\\s*\\(",
+        "severity": "critical",
+        "reason": "Dynamic function creation is forbidden"
+      },
+      {
+        "name": "direct_exec_bypass",
+        "regex": "child_process\\.(exec|execSync|spawn|spawnSync)\\s*\\(",
+        "severity": "critical",
+        "reason": "Direct process execution bypasses the Guard"
+      },
+      {
+        "name": "require_child_process",
+        "regex": "require\\s*\\(\\s*['\"]child_process['\"]\\s*\\)",
+        "severity": "high",
+        "reason": "Importing child_process directly is restricted"
+      },
+      {
+        "name": "vm_module",
+        "regex": "require\\s*\\(\\s*['\"]vm['\"]\\s*\\)",
+        "severity": "critical",
+        "reason": "VM module allows code execution bypass"
+      },
+      {
+        "name": "base64_decode_exec",
+        "regex": "Buffer\\.from\\s*\\([^)]+,\\s*['\"]base64['\"]\\s*\\).*\\.(toString|eval)",
+        "severity": "high",
+        "reason": "Base64 decoding for execution is suspicious"
+      },
+      {
+        "name": "obfuscated_strings",
+        "regex": "\\\\x[0-9a-fA-F]{2}(\\\\x[0-9a-fA-F]{2}){5,}",
+        "severity": "medium",
+        "reason": "Heavily escaped strings may indicate obfuscation"
+      },
+      {
+        "name": "network_bypass",
+        "regex": "(http|https|net|dgram|tls)\\.(request|get|createServer|connect)\\s*\\(",
+        "severity": "high",
+        "reason": "Direct network operations must go through approved channels"
+      },
+      {
+        "name": "file_system_root",
+        "regex": "(writeFile|appendFile|unlink|rmdir).*['\"](\\/|C:\\\\)(Windows|Program Files|System32)",
+        "severity": "critical",
+        "reason": "Operations on system directories are forbidden"
+      },
+      {
+        "name": "environment_modification",
+        "regex": "process\\.env\\s*\\[.*\\]\\s*=",
+        "severity": "medium",
+        "reason": "Modifying environment variables requires review"
+      }
+    ]
+  },
+
+  "networkWhitelist": {
+    "description": "Allowed domains for network requests",
+    "allowed": [
+      "localhost",
+      "127.0.0.1",
+      "api.anthropic.com",
+      "api.openai.com",
+      "api.openrouter.ai",
+      "github.com",
+      "raw.githubusercontent.com",
+      "npmjs.com",
+      "registry.npmjs.org",
+      "pypi.org"
+    ],
+    "requiresApproval": [
+      "*.google.com",
+      "*.microsoft.com",
+      "*.amazon.com"
+    ]
+  },
+
+  "selfEvolution": {
+    "commitPrefix": "[Self-Improvement]",
+    "requiresSanityCheck": true,
+    "rollbackOnFailure": true,
+    "maxAutoRetries": 3,
+    "accuracyThreshold": 0.10,
+    "cooldownPeriod": 300
+  },
+
+  "incidentReporting": {
+    "reportTo": "whatsapp",
+    "events": [
+      "self_improvement_attempt",
+      "self_improvement_success",
+      "self_improvement_failure",
+      "accuracy_threshold_violation",
+      "forbidden_pattern_detected",
+      "immutable_access_attempt",
+      "auto_rollback_triggered"
+    ]
+  }
+}

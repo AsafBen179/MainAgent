@@ -1,0 +1,91 @@
+# ================================
+# SECURITY-CRITICAL EXCLUSIONS
+# ================================
+# This is a PUBLIC repository - these files MUST NEVER be committed
+
+# WhatsApp Session Data (contains authentication tokens)
+sessions/
+sessions/**
+**/session-*
+*.session
+
+# Local Databases (may contain private data)
+# Only exclude top-level memory folder, not src/core/memory/
+/memory/
+/memory/**
+*.db
+*.db-wal
+*.db-shm
+
+# Environment Variables (API keys, secrets)
+.env
+.env.*
+.env.local
+.env.production
+*.env
+
+# API Keys and Credentials
+config/keys.json
+config/credentials.json
+config/secrets.json
+**/api-key*
+**/apikey*
+**/*secret*
+**/*credential*
+
+# ================================
+# BUILD ARTIFACTS
+# ================================
+dist/
+build/
+out/
+
+# Dependencies
+node_modules/
+
+# ================================
+# LOGS AND RUNTIME DATA
+# ================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Playbooks and plans (may contain sensitive operation history)
+playbooks/
+plans/
+
+# ================================
+# IDE AND EDITOR
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ================================
+# TESTING
+# ================================
+coverage/
+.nyc_output/
+*.test.db
+
+# ================================
+# TEMPORARY FILES
+# ================================
+tmp/
+temp/
+*.tmp
+*.bak
+
+# ================================
+# PUPPETEER/PLAYWRIGHT
+# ================================
+.cache/
+screenshots/
+test-results/
+playwright-report/

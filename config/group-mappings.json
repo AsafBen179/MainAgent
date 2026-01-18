@@ -1,0 +1,21 @@
+{
+  "mappings": [
+    {
+      "groupNamePattern": "^Trading.*|.*Crypto.*|.*BTC.*|.*ETH.*",
+      "persona": "Trading",
+      "description": "Groups with Trading, Crypto, BTC, or ETH in the name"
+    },
+    {
+      "groupNamePattern": "^Dev.*|.*Development.*|.*Code.*|.*Engineering.*",
+      "persona": "Dev",
+      "description": "Groups with Dev, Development, Code, or Engineering in the name"
+    },
+    {
+      "groupNamePattern": ".*",
+      "persona": "General",
+      "description": "Default fallback for all other groups"
+    }
+  ],
+  "privateMessagePersona": "General",
+  "defaultPersona": "General"
+}

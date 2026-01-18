@@ -1,0 +1,33 @@
+{
+  "coinmarketcap_price": {
+    "name": "CoinMarketCap Price (Refined)",
+    "selectors": [
+      "tr:nth-child(3) td:nth-child(4) span",
+      "td:nth-child(4) span"
+    ],
+    "verified": true,
+    "lastUpdated": "2026-01-17T17:25:35.967Z"
+  },
+  "coinmarketcap_volume": {
+    "name": "CoinMarketCap Volume",
+    "selectors": [
+      "[data-test=\"text-volume-24h\"]",
+      "span[class*=\"statsValue\"]",
+      "td:nth-child(8) span",
+      "[class*=\"volume\"] span"
+    ],
+    "verified": false,
+    "lastUpdated": "2026-01-17T17:25:26.339Z"
+  },
+  "coinmarketcap_change": {
+    "name": "CoinMarketCap 24h Change",
+    "selectors": [
+      "[data-test=\"text-percent-change-24h\"]",
+      "span[class*=\"percentChange\"]",
+      "td:nth-child(5) span",
+      "[class*=\"change\"] span"
+    ],
+    "verified": false,
+    "lastUpdated": "2026-01-17T17:25:26.339Z"
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "$schema": "./guard_policy.schema.json",
+  "version": "1.0.0",
+  "description": "Execution Guard Policy - Command Classification Rules",
+
+  "blacklist": {
+    "description": "Commands that are NEVER allowed - hard blocked",
+    "patterns": [
+      "format",
+      "del /s /q C:\\\\Windows",
+      "rd /s /q C:\\\\Windows",
+      "rmdir /s /q C:\\\\Windows",
+      "del /s /q C:\\\\Program Files",
+      "Remove-Item -Recurse -Force C:\\\\Windows",
+      "Remove-Item -Recurse -Force C:\\\\Program Files",
+      "reg delete HKLM\\\\SYSTEM",
+      "reg delete HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows",
+      "bcdedit",
+      "diskpart",
+      "cipher /w",
+      "takeown /f C:\\\\Windows",
+      "icacls C:\\\\Windows /grant",
+      "net user administrator",
+      "net localgroup administrators",
+      "schtasks /create.*SYSTEM",
+      "shutdown /r /t 0",
+      "shutdown /s /t 0"
+    ],
+    "executables": [
+      "format.com",
+      "diskpart.exe",
+      "bcdedit.exe"
+    ]
+  },
+
+  "classification": {
+    "green": {
+      "description": "Safe operations - Auto-execute without logging",
+      "patterns": [
+        "^dir\\s",
+        "^ls\\s",
+        "^type\\s",
+        "^cat\\s",
+        "^Get-Content\\s",
+        "^Get-ChildItem\\s",
+        "^echo\\s",
+        "^Write-Output\\s",
+        "^pwd$",
+        "^Get-Location$",
+        "^cd\\s",
+        "^Set-Location\\s",
+        "^git\\s+(status|log|diff|branch|show|remote)",
+        "^node\\s+--version",
+        "^npm\\s+(list|ls|outdated|view)",
+        "^where\\s",
+        "^which\\s",
+        "^hostname$",
+        "^whoami$",
+        "^date$",
+        "^time$",
+        "^systeminfo$",
+        "^tasklist$",
+        "^netstat\\s+-an"
+      ],
+      "allowedPaths": [
+        "C:\\\\AutonomousAgent\\\\**",
+        "C:\\\\Users\\\\asaf1\\\\Projects\\\\**",
+        "C:\\\\RemoteClaudeCode\\\\**"
+      ]
+    },
+
+    "yellow": {
+      "description": "Sensitive operations - Execute and log to WhatsApp",
+      "patterns": [
+        "^npm\\s+(install|uninstall|update|ci)",
+        "^pip\\s+(install|uninstall)",
+        "^git\\s+(add|commit|push|pull|merge|rebase|checkout|reset)",
+        "^del\\s",
+        "^rm\\s",
+        "^Remove-Item\\s",
+        "^mkdir\\s",
+        "^md\\s",
+        "^New-Item\\s",
+        "^copy\\s",
+        "^cp\\s",
+        "^Copy-Item\\s",
+        "^move\\s",
+        "^mv\\s",
+        "^Move-Item\\s",
+        "^ren\\s",
+        "^Rename-Item\\s",
+        "^taskkill\\s",
+        "^Stop-Process\\s",
+        "^Start-Process\\s",
+        "^Invoke-WebRequest\\s",
+        "^curl\\s",
+        "^wget\\s",
+        "^net\\s+start",
+        "^net\\s+stop",
+        "^sc\\s+(start|stop)"
+      ]
+    },
+
+    "red": {
+      "description": "Critical operations - Require WhatsApp approval before execution",
+      "patterns": [
+        "^reg\\s",
+        "^regedit",
+        "^Set-ItemProperty.*Registry",
+        "^New-ItemProperty.*Registry",
+        "^Remove-ItemProperty.*Registry",
+        "^netsh\\s",
+        "^Set-ExecutionPolicy\\s",
+        "^Enable-PSRemoting",
+        "^Disable-PSRemoting",
+        "^Set-Service\\s",
+        "^New-Service\\s",
+        "^Remove-Service\\s",
+        ".*\\.(exe|msi|bat|cmd|ps1)$",
+        "^powershell\\s+-.*Bypass",
+        "^Invoke-Expression\\s",
+        "^iex\\s",
+        "^Start-Job\\s",
+        "^certutil\\s",
+        "^bitsadmin\\s",
+        ".*password.*",
+        ".*credential.*",
+        ".*secret.*",
+        ".*api.?key.*",
+        ".*token.*"
+      ],
+      "requiresApproval": true,
+      "approvalTimeout": 300
+    }
+  },
+
+  "whatsapp": {
+    "apiUrl": "http://localhost:3000",
+    "webhookUrl": "http://localhost:3001/webhook/whatsapp",
+    "adminPhones": ["538410266"],
+    "notificationGroup": "UAAC-Notifications"
+  },
+
+  "logging": {
+    "level": "info",
+    "logPath": "C:\\AutonomousAgent\\logs",
+    "retentionDays": 30
+  }
+}

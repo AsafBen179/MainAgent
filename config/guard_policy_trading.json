@@ -1,0 +1,76 @@
+{
+  "policyName": "trading",
+  "description": "Restrictive policy for trading persona - market analysis only",
+  "blacklist": {
+    "patterns": [
+      "format",
+      "del /[sS]",
+      "rd /[sS]",
+      "rm -rf",
+      "shutdown",
+      "restart",
+      "reg delete",
+      "net user",
+      "netsh",
+      "taskkill",
+      "cipher /w",
+      "diskpart",
+      "bcdedit",
+      "bootrec",
+      "sfc /scannow",
+      "chkdsk",
+      "defrag"
+    ],
+    "executables": [
+      "powershell -ep bypass",
+      "cmd /c start",
+      "mshta",
+      "wscript",
+      "cscript",
+      "certutil -decode"
+    ]
+  },
+  "classification": {
+    "green": {
+      "patterns": [
+        "^curl.*api.*price",
+        "^curl.*api.*ticker",
+        "^curl.*coingecko",
+        "^curl.*binance.*klines",
+        "^npm run.*scrape",
+        "^node.*crypto-news",
+        "^cat.*\\.json$",
+        "^type.*\\.json$",
+        "^dir /b",
+        "^ls -la"
+      ],
+      "allowedPaths": [
+        "C:\\\\MainAgent\\\\logs\\\\**",
+        "C:\\\\MainAgent\\\\memory\\\\**"
+      ]
+    },
+    "yellow": {
+      "patterns": [
+        "^curl",
+        "^wget",
+        "^npm run",
+        "^node"
+      ]
+    },
+    "red": {
+      "patterns": [
+        ".*api.*key.*",
+        ".*secret.*",
+        ".*password.*",
+        ".*trade.*",
+        ".*order.*",
+        ".*buy.*",
+        ".*sell.*",
+        ".*withdraw.*",
+        ".*transfer.*"
+      ],
+      "requiresApproval": true,
+      "approvalTimeout": 300
+    }
+  }
+}
