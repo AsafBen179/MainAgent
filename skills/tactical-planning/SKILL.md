@@ -1,220 +1,365 @@
 ---
 name: tactical-planning
 description: This skill should be used when the user asks to "create a plan", "plan a mission", "analyze multiple steps", "execute a complex task", "monitor progress", or when starting any multi-step web automation, trading analysis, or research task that requires structured execution.
-version: 1.0.0
+version: 2.0.0
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - TodoWrite
 ---
 
-# Tactical Planning Skill - Structured Execution Plans
+# Tactical Planning Skill - Structured Execution with WhatsApp Signaling
 
-Use this skill to "think before acting" on complex, multi-step tasks. Create a roadmap before execution so:
-- Progress can be monitored via WhatsApp
-- Each step has clear success criteria
-- Failures can be handled gracefully
-- The user understands what will happen
+You are an autonomous tactical planner. Before executing complex tasks, you MUST create a structured plan. Plans are logged with special prefixes so the WhatsApp bridge can intercept and relay progress to the user.
 
 ## When to Create a Plan
 
-**Always create a plan for:**
+**ALWAYS create a plan for:**
 - Tasks with 3+ distinct steps
 - Web automation involving multiple pages
 - Data extraction from multiple sources
-- Any task the user wants to monitor
+- Trading analysis across multiple assets
+- Any task the user wants to monitor remotely
 
 **Skip planning for:**
-- Simple single-step tasks
-- Quick lookups or screenshots
+- Simple single-step tasks (one URL, one action)
+- Quick lookups or single screenshots
 - Direct answers from memory
 
-## Plan Structure
+## BRIDGE_SIGNAL Protocol
 
-### 1. Goal Definition
+The WhatsApp bridge monitors output for special prefixes. Use these EXACTLY as shown:
+
+### Plan Creation
+```
+BRIDGE_SIGNAL:PLAN_CREATED
+{
+  "planId": "TP-[6 random chars]",
+  "goal": "[What we're achieving]",
+  "category": "trading|research|automation|monitoring",
+  "steps": [number of steps],
+  "estimatedActions": [total MCP calls expected]
+}
+```
+
+### Plan Started
+```
+BRIDGE_SIGNAL:PLAN_STARTED
+{
+  "planId": "TP-XXXXXX",
+  "message": "Starting execution..."
+}
+```
+
+### Step Progress
+```
+BRIDGE_SIGNAL:STEP_PROGRESS
+{
+  "planId": "TP-XXXXXX",
+  "step": [current step number],
+  "total": [total steps],
+  "action": "[What's happening]",
+  "status": "started|completed|failed|skipped"
+}
+```
+
+### Plan Completed
+```
+BRIDGE_SIGNAL:PLAN_COMPLETED
+{
+  "planId": "TP-XXXXXX",
+  "status": "success|partial|failed",
+  "summary": "[Brief outcome description]",
+  "data": { [extracted data if any] }
+}
+```
+
+### Error Signal
+```
+BRIDGE_SIGNAL:PLAN_ERROR
+{
+  "planId": "TP-XXXXXX",
+  "step": [step where error occurred],
+  "error": "[Error description]",
+  "action": "retry|skip|abort|self_correct"
+}
+```
+
+## Plan Structure Template
+
+When creating a plan, use this exact format:
 
 ```
+========================================
+TACTICAL PLAN: TP-[ID]
+========================================
+
+STATUS: DRAFT
+
 GOAL: [Clear description of what we're achieving]
-CATEGORY: trading | research | data_extraction | automation
-SUCCESS CRITERIA:
-  - [Measurable outcome 1]
-  - [Measurable outcome 2]
-```
-
-### 2. Pre-Conditions
-
-Before starting, verify:
-- Required access/permissions
-- Network connectivity
-- Previous data if needed
-
-### 3. Step-by-Step Actions
-
-Each step must have:
-- **Action**: What to do (navigate, click, extract, etc.)
-- **Target**: URL, selector, or description
-- **Expected Outcome**: What should happen
-- **On Failure**: abort | retry | skip | self_correct
-
-## Plan Template
-
-```
-========================================
-TACTICAL PLAN: [ID]
-========================================
-
-STATUS: DRAFT → APPROVED → EXECUTING → COMPLETED
-
-GOAL: [Description]
-CATEGORY: [Category]
+CATEGORY: [trading | research | automation | monitoring]
 
 SUCCESS CRITERIA:
-  1. [Criterion 1]
-  2. [Criterion 2]
+  1. [Measurable outcome 1]
+  2. [Measurable outcome 2]
+  3. [Measurable outcome 3]
 
 PRE-CONDITIONS:
-  [ ] [Condition 1]
-  [ ] [Condition 2]
+  [ ] [Required condition 1]
+  [ ] [Required condition 2]
 
 STEPS:
 ----------------------------------------
-[ ] Step 1: [action]
-    Target: [target]
-    Expected: [outcome]
-    On Failure: [strategy]
+[ ] Step 1: [action verb] [target]
+    Tool: [which MCP tool or action]
+    Expected: [what should happen]
+    On Failure: [retry | skip | abort | self_correct]
 
-[ ] Step 2: [action]
-    Target: [target]
-    Expected: [outcome]
-    On Failure: [strategy]
+[ ] Step 2: [action verb] [target]
+    Tool: [which MCP tool or action]
+    Expected: [what should happen]
+    On Failure: [retry | skip | abort | self_correct]
+
+[ ] Step 3: [action verb] [target]
+    Tool: [which MCP tool or action]
+    Expected: [what should happen]
+    On Failure: [retry | skip | abort | self_correct]
 ----------------------------------------
 
-OUTCOME: [Pending]
+ESTIMATED DURATION: [X actions]
 ========================================
 ```
 
-## Example: Trading Analysis Plan
+## Example Plans
 
+### Example 1: Crypto Analysis Plan
 ```
 ========================================
-TACTICAL PLAN: TP-ABC123
+TACTICAL PLAN: TP-A7X9K2
 ========================================
 
 STATUS: APPROVED
 
-GOAL: Analyze ETH/BTC ratio on TradingView
+GOAL: Analyze ETH/BTC ratio and market sentiment
 CATEGORY: trading
 
 SUCCESS CRITERIA:
-  1. Extract current price
-  2. Capture chart screenshot
-  3. Identify trend direction
-  4. Note key support/resistance levels
+  1. Current ETH/BTC price extracted
+  2. 24h change percentage captured
+  3. Chart screenshot saved
+  4. Trend direction identified
 
 PRE-CONDITIONS:
   [x] TradingView accessible
-  [x] Browser available
+  [x] Playwright MCP available
 
 STEPS:
 ----------------------------------------
-[x] Step 1: navigate
-    Target: https://www.tradingview.com/symbols/ETHBTC/
+[x] Step 1: Navigate to TradingView
+    Tool: mcp__playwright__browser_navigate
     Expected: Page loads with chart
     On Failure: retry
 
-[ ] Step 2: waitFor
-    Target: .tv-symbol-price-quote__value
-    Expected: Price element visible
+[ ] Step 2: Wait for price element
+    Tool: mcp__playwright__browser_wait
+    Expected: Price visible
     On Failure: self_correct
 
-[ ] Step 3: screenshot
-    Target: Full page
-    Expected: Chart image saved
+[ ] Step 3: Extract price data
+    Tool: mcp__playwright__browser_snapshot
+    Expected: DOM with price values
+    On Failure: retry
+
+[ ] Step 4: Capture chart screenshot
+    Tool: mcp__playwright__browser_take_screenshot
+    Expected: Image saved
     On Failure: skip
 
-[ ] Step 4: extract
-    Target: Price, change %, volume
-    Expected: Data extracted
-    On Failure: retry
+[ ] Step 5: Analyze and summarize
+    Tool: [internal analysis]
+    Expected: Trend assessment
+    On Failure: abort
 ----------------------------------------
 
-OUTCOME: Pending
+ESTIMATED DURATION: 5 actions
+========================================
+```
+
+### Example 2: Multi-Site Research Plan
+```
+========================================
+TACTICAL PLAN: TP-B3M5N8
+========================================
+
+STATUS: DRAFT
+
+GOAL: Compare BTC price across 3 exchanges
+CATEGORY: research
+
+SUCCESS CRITERIA:
+  1. BTC/USDT prices from Binance, Coinbase, Kraken
+  2. Price differences calculated
+  3. Arbitrage opportunity identified if >0.5%
+
+PRE-CONDITIONS:
+  [ ] All exchange sites accessible
+  [ ] No rate limiting active
+
+STEPS:
+----------------------------------------
+[ ] Step 1: Get Binance BTC price
+    Tool: mcp__playwright__browser_navigate + snapshot
+    Expected: Price extracted
+    On Failure: skip (continue with others)
+
+[ ] Step 2: Get Coinbase BTC price
+    Tool: mcp__playwright__browser_navigate + snapshot
+    Expected: Price extracted
+    On Failure: skip
+
+[ ] Step 3: Get Kraken BTC price
+    Tool: mcp__playwright__browser_navigate + snapshot
+    Expected: Price extracted
+    On Failure: skip
+
+[ ] Step 4: Calculate differences
+    Tool: [internal calculation]
+    Expected: Percentage diff computed
+    On Failure: abort
+
+[ ] Step 5: Generate report
+    Tool: [internal]
+    Expected: Summary with recommendation
+    On Failure: abort
+----------------------------------------
+
+ESTIMATED DURATION: 8 actions
 ========================================
 ```
 
 ## Execution Flow
 
 ### Phase 1: Planning
-1. Receive task from user
-2. Create plan with steps
-3. Send plan summary to WhatsApp for approval
-
-### Phase 2: Approval
-1. User reviews plan
-2. User approves or requests changes
-3. Plan status changes to APPROVED
-
-### Phase 3: Execution
-1. Execute steps sequentially
-2. Update status after each step
-3. Send progress updates to WhatsApp
-4. Handle failures per step strategy
-
-### Phase 4: Completion
-1. Mark plan as COMPLETED or FAILED
-2. Summarize outcomes
-3. Send final report to WhatsApp
-
-## Progress Updates
-
-Send updates to WhatsApp at key points:
-
 ```
-📋 Plan Started: TP-ABC123
-Goal: Analyze ETH/BTC on TradingView
-Steps: 4
+1. Receive task from user/trigger
+2. Analyze complexity (steps needed)
+3. Create plan with TACTICAL PLAN format
+4. Output: BRIDGE_SIGNAL:PLAN_CREATED
+5. If user approval needed, wait for confirmation
+```
 
-✅ Step 1/4: Navigated to TradingView
-🔄 Step 2/4: Waiting for price element...
+### Phase 2: Execution
+```
+1. Output: BRIDGE_SIGNAL:PLAN_STARTED
+2. For each step:
+   a. Output: BRIDGE_SIGNAL:STEP_PROGRESS (started)
+   b. Execute the action using appropriate tool
+   c. Check result
+   d. If success: BRIDGE_SIGNAL:STEP_PROGRESS (completed)
+   e. If failure: Handle per On Failure strategy
+3. Continue until all steps done or abort
+```
 
-✅ Plan Completed!
-- Price: 0.03524 BTC
-- Change: +1.29%
-- Trend: Recovering from lows
+### Phase 3: Completion
+```
+1. Compile results from all steps
+2. Generate summary
+3. Output: BRIDGE_SIGNAL:PLAN_COMPLETED
+4. Return final data/report to user
 ```
 
 ## Failure Handling Strategies
 
-### abort
-Stop execution immediately. Use for critical failures.
-
 ### retry
-Retry the step (max 2-3 times). Use for transient errors.
+```
+Max attempts: 3
+Delay between: 2 seconds
+If still fails: escalate to skip or abort
+```
 
 ### skip
-Skip this step and continue. Use for optional steps.
+```
+Log the skip reason
+Continue to next step
+Mark final status as "partial" if critical step skipped
+```
+
+### abort
+```
+Stop execution immediately
+Output: BRIDGE_SIGNAL:PLAN_ERROR
+Report what was completed vs what failed
+```
 
 ### self_correct
-Invoke self-correction skill to fix the issue, then retry.
-
-## Saving Plans
-
-Plans are saved to `plans/` directory:
-- `plans/TP-ABC123.json` - Individual plan
-- `plans/current.json` - Active plan
-
-## Best Practices
-
-1. **Keep steps atomic**: Each step does one thing
-2. **Set realistic timeouts**: Web pages need time to load
-3. **Include verification**: Confirm each step succeeded
-4. **Plan for failure**: Define fallback strategies
-5. **Communicate progress**: Keep user informed via WhatsApp
+```
+1. Invoke self-correction skill
+2. Analyze why step failed
+3. Apply fix if possible
+4. Retry with corrected approach
+5. If still fails: escalate to skip/abort
+```
 
 ## Integration with Other Skills
 
-- **web-operator**: Executes navigation and interaction steps
-- **self-correction**: Fixes selector issues during execution
+### web-operator
+- All web navigation steps use web-operator patterns
+- Stealth timing is applied automatically
+- Site-specific selectors from web-operator are used
 
-## Important Notes
+### self-correction
+- When On Failure = self_correct, invoke that skill
+- Pass error message and page state
+- Apply any suggested fixes before retry
 
-- Always create a plan for complex tasks
-- Send plan summary before starting execution
-- Update WhatsApp with progress at each step
-- Save plans for future reference and learning
+## Plan Storage
+
+Plans should be logged for future reference:
+```
+Location: logs/plans/
+Format: TP-[ID].json
+Content: Full plan + execution results
+```
+
+## Output Examples for WhatsApp
+
+The bridge will format signals for WhatsApp like this:
+
+**Plan Created:**
+```
+📋 New Plan: TP-A7X9K2
+Goal: Analyze ETH/BTC ratio
+Steps: 5
+Category: Trading
+```
+
+**Progress Update:**
+```
+🔄 TP-A7X9K2 [2/5]
+Extracting price data...
+```
+
+**Completion:**
+```
+✅ Plan TP-A7X9K2 Complete!
+ETH/BTC: 0.0524 (+2.3%)
+Trend: Bullish recovery
+```
+
+**Error:**
+```
+⚠️ TP-A7X9K2 Error at Step 3
+Selector not found
+Action: Attempting self-correction...
+```
+
+## Important Rules
+
+1. **Always signal progress** - The user may be watching via WhatsApp
+2. **Use exact BRIDGE_SIGNAL format** - The bridge parses these literally
+3. **Plan before acting** - Complex tasks need roadmaps
+4. **Handle failures gracefully** - Don't crash, recover or report
+5. **Keep plans atomic** - Each step should do ONE thing
+6. **Estimate accurately** - Set realistic expectations
+7. **Save plans** - Future reference and learning
