@@ -6,12 +6,14 @@ A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task exe
 
 - **WhatsApp Integration**: Full WhatsApp Web connection via whatsapp-web.js
 - **Claude CLI Execution**: Autonomous task execution with real-time streaming output
-- **Browser Automation**: Playwright MCP integration for web tasks (trading, research, screenshots)
+- **Native Skills**: Three core autonomous skills (webOperator, selfCorrection, tacticalPlanning)
+- **Browser Automation**: Stealth Playwright with anti-detection and headed mode
 - **Smart Task Detection**: Automatic detection of web-related tasks for browser enablement
 - **AI Summarization**: OpenRouter integration for intelligent response formatting
 - **Guard System**: Command classification (GREEN/YELLOW/RED) for security
 - **Knowledge Base**: SQLite-based learning from successful/failed operations
-- **Multi-Project Support**: Group-to-project mapping for organized task execution
+- **Self-Correction**: Autonomous DOM failure analysis and selector updates
+- **Tactical Planning**: Structured JSON execution plans for multi-step missions
 
 ## Security Notice
 
@@ -29,16 +31,92 @@ A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task exe
 ┌─────────────────┐     Webhook      ┌─────────────────┐     spawn      ┌─────────────────┐
 │  WhatsApp API   │ ───────────────> │     Bridge      │ ─────────────> │   Claude CLI    │
 │   (port 3000)   │                  │   (port 3001)   │                │                 │
-│                 │ <─────────────── │                 │ <───────────── │  + Playwright   │
-│ whatsapp-web.js │     Response     │  Orchestrator   │    stdout      │    MCP Server   │
+│                 │ <─────────────── │                 │ <───────────── │  + Native Skills│
+│ whatsapp-web.js │     Response     │  Orchestrator   │    stdout      │  + Playwright   │
 └─────────────────┘                  └─────────────────┘                └─────────────────┘
         │                                    │
         │ QR Code                            │ Agent Integration
         v                                    v
    ┌─────────┐                    ┌──────────────────────┐
    │ Terminal│                    │  Guard + Knowledge   │
-   └─────────┘                    │  + OpenRouter AI     │
+   └─────────┘                    │  + Skills + AI       │
                                   └──────────────────────┘
+```
+
+## Native Skills
+
+Three autonomous skills are available in the root `skills/` directory, following Claude Code native format:
+
+### 1. webOperator.ts - Stealth Browser Automation
+
+**Purpose:** Access external websites without bot detection.
+
+**Features:**
+- Headed mode (visible browser) for monitoring
+- Anti-detection: disabled automation flags, realistic user agent
+- Human-like delays and interactions
+- Session management for browser reuse
+
+**Actions:** `launch`, `navigate`, `click`, `type`, `screenshot`, `getContent`, `waitFor`, `evaluate`, `close`
+
+**Example:**
+```typescript
+await webOperator({
+  action: 'navigate',
+  url: 'https://tradingview.com/symbols/ETHBTC',
+  waitForSelector: '.tv-symbol-price-quote__value'
+});
+```
+
+### 2. selfCorrection.ts - DOM Failure Analysis
+
+**Purpose:** Automatically fix web automation failures.
+
+**Features:**
+- Error categorization (selector_outdated, timeout, network, etc.)
+- Alternative selector finder from page content
+- Memory-based learning from past corrections
+- Automatic fix application
+
+**Actions:** `analyzeFailure`, `findAlternatives`, `learnCorrection`, `getMemory`, `applyFix`, `categorizeError`
+
+**Example:**
+```typescript
+const result = await selfCorrection({
+  action: 'analyzeFailure',
+  failedSelector: '#old-price',
+  errorMessage: 'Element not found',
+  pageContent: document.documentElement.outerHTML
+});
+// Returns alternative selectors with confidence scores
+```
+
+### 3. tacticalPlanning.ts - Structured Execution Plans
+
+**Purpose:** "Think before acting" - create roadmaps for complex tasks.
+
+**Features:**
+- JSON execution plans with success criteria
+- Step-by-step tracking with status
+- Pre-condition verification
+- WhatsApp bridge integration for monitoring
+
+**Actions:** `create`, `addStep`, `approve`, `start`, `completeStep`, `getStatus`, `getSummary`, `abort`, `load`
+
+**Example:**
+```typescript
+await tacticalPlanning({
+  action: 'create',
+  goal: 'Analyze ETH/BTC on TradingView',
+  category: 'trading',
+  successCriteria: ['Extract price', 'Capture chart', 'Identify trend'],
+  steps: [
+    { action: 'navigate', target: 'https://tradingview.com/symbols/ETHBTC' },
+    { action: 'waitFor', target: '.tv-symbol-price-quote__value' },
+    { action: 'screenshot', description: 'Capture chart' },
+    { action: 'extract', target: '.tv-symbol-price-quote__value' }
+  ]
+});
 ```
 
 ## Components
@@ -51,7 +129,6 @@ A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task exe
   - Session persistence
   - Message sending/receiving with `sendSeen: false` fix
   - Webhook notifications to Bridge
-  - Hebrew language support
 
 ### Bridge (`src/bridge/`)
 - **Port:** 3001
@@ -68,46 +145,53 @@ A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task exe
 ### Agent Integration (`src/bridge/agent/`)
 - **ExecutionGuard**: Classifies commands as safe/sensitive/dangerous
 - **KnowledgeBase**: SQLite storage for lessons learned
-- **Skills Configuration**: Web operator, self-correction, tactical planning
+- **Skills Configuration**: Loads and manages native skills
 
 ## Project Structure
 
 ```
-src/
-├── index.js                    # Unified entry point (starts both services)
-├── whatsapp-api/
-│   ├── index.js                # WhatsApp API server
-│   ├── whatsappService.js      # whatsapp-web.js wrapper
-│   ├── messageHandler.js       # Message processing
-│   └── utils/                  # Logger, validator
-└── bridge/
-    ├── index.js                # Bridge server entry
-    ├── app.js                  # Express app setup
-    ├── core/
-    │   ├── BridgeOrchestrator.js   # Main orchestration logic
-    │   ├── EventBus.js             # Event system
-    │   └── CommandQueue.js         # Task queue management
-    ├── claude/
-    │   ├── CmdExecutor.js          # Claude CLI execution
-    │   ├── SessionManager.js       # Chat session management
-    │   └── OutputProcessor.js      # Process CLI output
-    ├── agent/
-    │   ├── AgentIntegration.js     # Guard + Knowledge integration
-    │   ├── ExecutionGuard.js       # Command classification
-    │   └── KnowledgeBase.js        # Learning database
-    ├── ai/
-    │   ├── OpenRouterClient.js     # AI summarization client
-    │   └── SummarizerService.js    # Output formatting
-    ├── whatsapp/
-    │   ├── WhatsAppClient.js       # API client
-    │   ├── WebhookHandler.js       # Webhook processing
-    │   └── ResponseSender.js       # Send responses
-    └── utils/                      # Config loader, logger
-
-config/
-├── guard_policy.json           # Command classification rules
-├── skills.json                 # Skills configuration
-└── bridge.config.json          # Bridge settings
+├── skills/                         # Native Claude Code skills
+│   ├── index.ts                    # Skills export and metadata
+│   ├── webOperator.ts              # Stealth browser automation
+│   ├── selfCorrection.ts           # DOM failure analysis
+│   └── tacticalPlanning.ts         # Structured execution plans
+├── src/
+│   ├── index.js                    # Unified entry point
+│   ├── whatsapp-api/
+│   │   ├── index.js                # WhatsApp API server
+│   │   ├── whatsappService.js      # whatsapp-web.js wrapper
+│   │   ├── messageHandler.js       # Message processing
+│   │   └── utils/                  # Logger, validator
+│   └── bridge/
+│       ├── index.js                # Bridge server entry
+│       ├── app.js                  # Express app setup
+│       ├── core/
+│       │   ├── BridgeOrchestrator.js   # Main orchestration
+│       │   ├── EventBus.js             # Event system
+│       │   └── CommandQueue.js         # Task queue
+│       ├── claude/
+│       │   ├── CmdExecutor.js          # Claude CLI execution
+│       │   ├── SessionManager.js       # Session management
+│       │   └── OutputProcessor.js      # Output processing
+│       ├── agent/
+│       │   ├── AgentIntegration.js     # Guard + Knowledge
+│       │   ├── ExecutionGuard.js       # Command classification
+│       │   └── KnowledgeBase.js        # Learning database
+│       ├── ai/
+│       │   ├── OpenRouterClient.js     # AI summarization
+│       │   └── SummarizerService.js    # Output formatting
+│       └── whatsapp/
+│           ├── WhatsAppClient.js       # API client
+│           ├── WebhookHandler.js       # Webhook processing
+│           └── ResponseSender.js       # Send responses
+├── config/
+│   ├── guard_policy.json           # Command classification rules
+│   ├── skills.json                 # Skills configuration
+│   └── bridge.config.json          # Bridge settings
+├── plans/                          # Tactical execution plans (JSON)
+├── screenshots/                    # Browser screenshots
+├── memory/                         # SQLite knowledge base
+└── logs/                           # Application logs
 ```
 
 ## Configuration
@@ -128,7 +212,7 @@ WEBHOOK_URL=http://localhost:3001/webhook/whatsapp
 # WhatsApp API Connection (Bridge -> WhatsApp API)
 WHATSAPP_API_URL=http://localhost:3000
 
-# Claude CLI Base Path
+# Claude CLI Base Path (where skills/ folder is located)
 BASE_PATH=C:\MainAgent
 
 # Browser Mode
@@ -158,6 +242,9 @@ npm install
 
 # Install Playwright MCP globally (for browser automation)
 npm install -g @playwright/mcp
+
+# Install Playwright browsers
+npx playwright install chromium
 ```
 
 ## Usage
@@ -185,24 +272,30 @@ npm run start:bridge
 3. **Webhook sent** to Bridge at `/webhook/whatsapp`
 4. **Guard classifies** command (GREEN/YELLOW/RED)
 5. **Bridge** detects if web task, enables Playwright MCP if needed
-6. **Claude CLI** executes with streaming output
-7. **Output processed** and summarized by OpenRouter AI
-8. **Response sent** back to WhatsApp group
+6. **Claude CLI** executes with native skills available
+7. **Skills** may be invoked (webOperator, selfCorrection, tacticalPlanning)
+8. **Output processed** and summarized by OpenRouter AI
+9. **Response sent** back to WhatsApp group
 
-## Web Task Examples
+## Task Examples
 
-The agent can handle web-based tasks with visible browser automation:
-
+### Trading Analysis
 ```
-# Trading Analysis
 "Analyze ETH/BTC ratio on TradingView"
-
-# Web Research
-"Check the latest news about Bitcoin on CoinDesk"
-
-# Screenshot capture
-"Take a screenshot of the Google homepage"
 ```
+Claude uses `webOperator` to navigate, `tacticalPlanning` to structure the analysis, and returns the full report.
+
+### Web Research
+```
+"Check the latest news about Bitcoin on CoinDesk"
+```
+Claude browses with stealth mode, extracts content, and summarizes findings.
+
+### Multi-Step Mission
+```
+"Create a plan to monitor SOL price alerts on 3 exchanges"
+```
+Claude creates a tactical plan, executes steps sequentially, and reports progress via WhatsApp.
 
 ## API Endpoints
 
@@ -254,6 +347,11 @@ Logs are stored in `logs/`:
 - Check MCP config uses `node` directly, not `npx`
 - Ensure web task keywords are in the command
 
+### Skills not discovered
+- Verify `BASE_PATH` in `.env` points to project root
+- Check that `skills/` folder exists with `.ts` files
+- Restart Bridge after adding new skills
+
 ### Claude CLI timeout
 - Check if Claude process produces output (idle timeout is 3 minutes)
 - Verify Claude CLI is authenticated: `claude --version`
@@ -264,4 +362,4 @@ Private - All rights reserved
 
 ---
 
-*Built with Claude Code + Playwright MCP*
+*Built with Claude Code + Native Skills + Playwright MCP*
