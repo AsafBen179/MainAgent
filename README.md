@@ -1,19 +1,20 @@
 # Unified WhatsApp Agent
 
-A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task execution with browser automation, intelligent task processing, and multi-project support.
+A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task execution with browser automation, intelligent task processing, and multi-persona support.
 
 ## Features
 
 - **WhatsApp Integration**: Full WhatsApp Web connection via whatsapp-web.js
 - **Claude CLI Execution**: Autonomous task execution with real-time streaming output
-- **Native Skills**: Three core autonomous skills (webOperator, selfCorrection, tacticalPlanning)
+- **Multi-Persona System**: Context-aware personas (TradingExpert, Dev, General) based on group
+- **Native Skills**: Four core autonomous skills with SKILL.md instruction format
 - **Browser Automation**: Stealth Playwright with anti-detection and headed mode
 - **Smart Task Detection**: Automatic detection of web-related tasks for browser enablement
 - **AI Summarization**: OpenRouter integration for intelligent response formatting
 - **Guard System**: Command classification (GREEN/YELLOW/RED) for security
-- **Knowledge Base**: SQLite-based learning from successful/failed operations
+- **Knowledge Base**: SQLite-based learning with persona-scoped memory
 - **Self-Correction**: Autonomous DOM failure analysis and selector updates
-- **Tactical Planning**: Structured JSON execution plans for multi-step missions
+- **Tactical Planning**: Structured execution plans with WhatsApp progress signals
 
 ## Security Notice
 
@@ -35,88 +36,130 @@ A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task exe
 │ whatsapp-web.js │     Response     │  Orchestrator   │    stdout      │  + Playwright   │
 └─────────────────┘                  └─────────────────┘                └─────────────────┘
         │                                    │
-        │ QR Code                            │ Agent Integration
+        │ QR Code                            │ Persona Router
         v                                    v
    ┌─────────┐                    ┌──────────────────────┐
    │ Terminal│                    │  Guard + Knowledge   │
-   └─────────┘                    │  + Skills + AI       │
+   └─────────┘                    │  + Personas + AI     │
                                   └──────────────────────┘
+```
+
+## Persona System
+
+The agent automatically routes messages to specialized personas based on WhatsApp group context.
+
+### Available Personas
+
+| Persona | Trigger Groups | Focus | Allowed Skills |
+|---------|---------------|-------|----------------|
+| **TradingExpert** | "Trading Expert*", "Trade Analysis*" | Market intelligence, technical analysis | web-operator, market-intelligence, tactical-planning, self-correction |
+| **Trading** | "Trading*", "Crypto*", "BTC*", "ETH*" | Price monitoring, news | web-operator, market-intelligence, tactical-planning |
+| **Dev** | "Dev*", "Development*", "Code*" | Full development access | all skills |
+| **General** | All other groups | Web browsing, Q&A | web-operator |
+
+### Persona Routing Flow
+
+```
+WhatsApp Message (from "Crypto Signals" group)
+         ↓
+PersonaRouter.route("Crypto Signals")
+         ↓
+Match: ".*Crypto.*" → Trading persona
+         ↓
+Inject Trading system prompt + priority skill
+         ↓
+Claude executes with trading context
+         ↓
+Save to KnowledgeBase with category="trading"
+```
+
+### Configuration
+
+**Group Mappings** (`config/group-mappings.json`):
+```json
+{
+  "mappings": [
+    { "groupNamePattern": "^Trading\\s*Expert.*", "persona": "TradingExpert", "priority": 1 },
+    { "groupNamePattern": "^Trading.*|.*Crypto.*", "persona": "Trading", "priority": 2 },
+    { "groupNamePattern": "^Dev.*|.*Code.*", "persona": "Dev", "priority": 3 },
+    { "groupNamePattern": ".*", "persona": "General", "priority": 99 }
+  ],
+  "groupIdOverrides": {
+    "specific_group_id@g.us": "TradingExpert"
+  }
+}
+```
+
+**Personas** (`config/personas.json`):
+```json
+{
+  "TradingExpert": {
+    "systemPrompt": "You are an expert cryptocurrency analyst...",
+    "allowedSkills": ["web-operator", "market-intelligence", "tactical-planning"],
+    "guardPolicy": "trading",
+    "memoryScope": "trading",
+    "prioritySkill": "market-intelligence"
+  }
+}
 ```
 
 ## Native Skills
 
-Three autonomous skills are available in the root `skills/` directory, following Claude Code native format:
+Four autonomous skills are available in the `skills/` directory, using SKILL.md instruction format:
 
-### 1. webOperator.ts - Stealth Browser Automation
+### 1. web-operator - Stealth Browser Automation
 
-**Purpose:** Access external websites without bot detection.
+**Triggers:** "browse website", "open TradingView", "check crypto prices", "take screenshot"
 
 **Features:**
 - Headed mode (visible browser) for monitoring
-- Anti-detection: disabled automation flags, realistic user agent
-- Human-like delays and interactions
-- Session management for browser reuse
+- Anti-detection: realistic timing, proper viewport
+- Site-specific selectors for TradingView, CoinGecko, Binance
+- Cookie/popup handling
 
-**Actions:** `launch`, `navigate`, `click`, `type`, `screenshot`, `getContent`, `waitFor`, `evaluate`, `close`
+### 2. self-correction - DOM Failure Analysis
 
-**Example:**
-```typescript
-await webOperator({
-  action: 'navigate',
-  url: 'https://tradingview.com/symbols/ETHBTC',
-  waitForSelector: '.tv-symbol-price-quote__value'
-});
-```
-
-### 2. selfCorrection.ts - DOM Failure Analysis
-
-**Purpose:** Automatically fix web automation failures.
+**Triggers:** "element not found", "fix selector", "debug web automation"
 
 **Features:**
-- Error categorization (selector_outdated, timeout, network, etc.)
-- Alternative selector finder from page content
-- Memory-based learning from past corrections
-- Automatic fix application
+- Error categorization (selector_outdated, timeout, dynamic_content, network)
+- Alternative selector finder with confidence scores
+- Permanent fix application via Edit tool
+- Site-specific selector memory
 
-**Actions:** `analyzeFailure`, `findAlternatives`, `learnCorrection`, `getMemory`, `applyFix`, `categorizeError`
+### 3. tactical-planning - Structured Execution Plans
 
-**Example:**
-```typescript
-const result = await selfCorrection({
-  action: 'analyzeFailure',
-  failedSelector: '#old-price',
-  errorMessage: 'Element not found',
-  pageContent: document.documentElement.outerHTML
-});
-// Returns alternative selectors with confidence scores
-```
-
-### 3. tacticalPlanning.ts - Structured Execution Plans
-
-**Purpose:** "Think before acting" - create roadmaps for complex tasks.
+**Triggers:** "create a plan", "plan a mission", "multi-step task"
 
 **Features:**
 - JSON execution plans with success criteria
-- Step-by-step tracking with status
-- Pre-condition verification
-- WhatsApp bridge integration for monitoring
+- `BRIDGE_SIGNAL:` protocol for WhatsApp progress updates
+- Failure handling strategies (retry, skip, abort, self_correct)
+- Integration with other skills
 
-**Actions:** `create`, `addStep`, `approve`, `start`, `completeStep`, `getStatus`, `getSummary`, `abort`, `load`
+### 4. market-intelligence - Trading Analysis Framework
 
-**Example:**
-```typescript
-await tacticalPlanning({
-  action: 'create',
-  goal: 'Analyze ETH/BTC on TradingView',
-  category: 'trading',
-  successCriteria: ['Extract price', 'Capture chart', 'Identify trend'],
-  steps: [
-    { action: 'navigate', target: 'https://tradingview.com/symbols/ETHBTC' },
-    { action: 'waitFor', target: '.tv-symbol-price-quote__value' },
-    { action: 'screenshot', description: 'Capture chart' },
-    { action: 'extract', target: '.tv-symbol-price-quote__value' }
-  ]
-});
+**Triggers:** "market analysis", "trade thesis", "chart analysis", "price check"
+
+**Features:**
+- TradingView and CoinGecko data source configurations
+- Trade Thesis structure template
+- Visual chart analysis guidelines
+- KnowledgeBase logging for learning
+- Risk assessment framework
+
+**Trade Thesis Output:**
+```
+TRADE_THESIS:
+==================================================
+Asset: ETH/BTC
+1. CURRENT STATE - Price, Volume, Market Cap
+2. TREND ANALYSIS - Direction, Strength, Evidence
+3. KEY LEVELS - Support, Resistance, Pivot
+4. VOLUME ANALYSIS - Confirmation/Divergence
+5. RISK ASSESSMENT - Bull/Bear scenarios
+6. CONFIDENCE LEVEL - High/Medium/Low
+==================================================
 ```
 
 ## Components
@@ -124,73 +167,61 @@ await tacticalPlanning({
 ### WhatsApp API (`src/whatsapp-api/`)
 - **Port:** 3000
 - **Purpose:** WhatsApp Web connection via whatsapp-web.js
-- **Features:**
-  - QR code display in terminal
-  - Session persistence
-  - Message sending/receiving with `sendSeen: false` fix
-  - Webhook notifications to Bridge
+- **Features:** QR code auth, session persistence, `sendSeen: false` fix
 
 ### Bridge (`src/bridge/`)
 - **Port:** 3001
 - **Purpose:** Claude CLI orchestration and response handling
 - **Features:**
-  - Webhook receiver for WhatsApp messages
+  - Persona routing based on group context
   - Claude CLI spawning with stream-json output
-  - Session management per chat/project
   - Playwright MCP for browser automation
   - AI-powered output summarization
-  - Guard system for command classification
-  - Knowledge base for learning
+  - Guard system with persona-specific policies
+  - Knowledge base with scoped memory
 
 ### Agent Integration (`src/bridge/agent/`)
-- **ExecutionGuard**: Classifies commands as safe/sensitive/dangerous
-- **KnowledgeBase**: SQLite storage for lessons learned
-- **Skills Configuration**: Loads and manages native skills
+- **PersonaRouter**: Routes messages to personas based on group patterns
+- **AgentIntegration**: Guard + Knowledge + Skills coordination
+- **KnowledgeBase**: SQLite storage with persona-scoped categories
 
 ## Project Structure
 
 ```
-├── skills/                         # Native Claude Code skills
-│   ├── index.ts                    # Skills export and metadata
-│   ├── webOperator.ts              # Stealth browser automation
-│   ├── selfCorrection.ts           # DOM failure analysis
-│   └── tacticalPlanning.ts         # Structured execution plans
+├── skills/                         # Native Claude Code skills (SKILL.md format)
+│   ├── web-operator/SKILL.md       # Stealth browser automation
+│   ├── self-correction/SKILL.md    # DOM failure analysis
+│   ├── tactical-planning/SKILL.md  # Structured execution plans
+│   └── market-intelligence/SKILL.md # Trading analysis framework
 ├── src/
 │   ├── index.js                    # Unified entry point
 │   ├── whatsapp-api/
 │   │   ├── index.js                # WhatsApp API server
 │   │   ├── whatsappService.js      # whatsapp-web.js wrapper
-│   │   ├── messageHandler.js       # Message processing
-│   │   └── utils/                  # Logger, validator
+│   │   └── messageHandler.js       # Message processing
 │   └── bridge/
 │       ├── index.js                # Bridge server entry
 │       ├── app.js                  # Express app setup
 │       ├── core/
-│       │   ├── BridgeOrchestrator.js   # Main orchestration
-│       │   ├── EventBus.js             # Event system
-│       │   └── CommandQueue.js         # Task queue
+│       │   └── BridgeOrchestrator.js   # Main orchestration + persona routing
 │       ├── claude/
 │       │   ├── CmdExecutor.js          # Claude CLI execution
-│       │   ├── SessionManager.js       # Session management
-│       │   └── OutputProcessor.js      # Output processing
+│       │   └── SessionManager.js       # Session management
 │       ├── agent/
+│       │   ├── PersonaRouter.js        # Group-to-persona routing
 │       │   ├── AgentIntegration.js     # Guard + Knowledge
-│       │   ├── ExecutionGuard.js       # Command classification
 │       │   └── KnowledgeBase.js        # Learning database
 │       ├── ai/
-│       │   ├── OpenRouterClient.js     # AI summarization
 │       │   └── SummarizerService.js    # Output formatting
 │       └── whatsapp/
-│           ├── WhatsAppClient.js       # API client
 │           ├── WebhookHandler.js       # Webhook processing
 │           └── ResponseSender.js       # Send responses
 ├── config/
 │   ├── guard_policy.json           # Command classification rules
-│   ├── skills.json                 # Skills configuration
+│   ├── personas.json               # Persona definitions
+│   ├── group-mappings.json         # Group → Persona mappings
 │   └── bridge.config.json          # Bridge settings
-├── plans/                          # Tactical execution plans (JSON)
-├── screenshots/                    # Browser screenshots
-├── memory/                         # SQLite knowledge base
+├── memory/                         # SQLite knowledge base (persona-scoped)
 └── logs/                           # Application logs
 ```
 
@@ -225,14 +256,6 @@ OPENROUTER_MODEL=xiaomi/mimo-v2-flash:free
 # Admin phones (comma separated)
 ADMIN_PHONES=972501234567
 ```
-
-### Playwright MCP Configuration
-The Bridge automatically enables Playwright MCP for web-related tasks. The MCP config is located at:
-```
-~/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/playwright/.mcp.json
-```
-
-Web tasks are detected by keywords like: `tradingview`, `crypto`, `analyze`, `chart`, `browse`, `website`, etc.
 
 ## Installation
 
@@ -270,57 +293,44 @@ npm run start:bridge
 1. **User sends WhatsApp message** to connected number/group
 2. **WhatsApp API** receives message via whatsapp-web.js
 3. **Webhook sent** to Bridge at `/webhook/whatsapp`
-4. **Guard classifies** command (GREEN/YELLOW/RED)
-5. **Bridge** detects if web task, enables Playwright MCP if needed
-6. **Claude CLI** executes with native skills available
-7. **Skills** may be invoked (webOperator, selfCorrection, tacticalPlanning)
-8. **Output processed** and summarized by OpenRouter AI
-9. **Response sent** back to WhatsApp group
+4. **PersonaRouter** matches group name → selects persona
+5. **Guard classifies** command using persona's policy
+6. **Bridge** detects if web task, enables Playwright MCP if needed
+7. **Claude CLI** executes with persona prompt + priority skill
+8. **Skills** may be invoked (market-intelligence for trading, etc.)
+9. **Output processed** and saved to KnowledgeBase (persona-scoped)
+10. **Response sent** back to WhatsApp group
 
 ## Task Examples
 
-### Trading Analysis
+### Trading Analysis (TradingExpert Persona)
 ```
 "Analyze ETH/BTC ratio on TradingView"
 ```
-Claude uses `webOperator` to navigate, `tacticalPlanning` to structure the analysis, and returns the full report.
+- Routes to TradingExpert persona
+- Uses market-intelligence skill (priority)
+- Creates Trade Thesis with support/resistance levels
+- Saves analysis to trading-scoped memory
 
-### Web Research
+### Development Task (Dev Persona)
 ```
-"Check the latest news about Bitcoin on CoinDesk"
+"Fix the bug in the login component"
 ```
-Claude browses with stealth mode, extracts content, and summarizes findings.
+- Routes to Dev persona
+- Full skill access
+- Standard guard policy
 
-### Multi-Step Mission
+### General Query (General Persona)
 ```
-"Create a plan to monitor SOL price alerts on 3 exchanges"
+"What's the weather in Tel Aviv?"
 ```
-Claude creates a tactical plan, executes steps sequentially, and reports progress via WhatsApp.
-
-## API Endpoints
-
-### WhatsApp API (port 3000)
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/health` | GET | Health check |
-| `/api/status` | GET | Connection status |
-| `/api/qr` | GET | Get QR code |
-| `/api/connect` | POST | Initialize connection |
-| `/api/send` | POST | Send message |
-| `/api/send-to-chat` | POST | Send to specific chat |
-| `/docs` | GET | API documentation (Redoc) |
-
-### Bridge (port 3001)
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/webhook/whatsapp` | POST | Receive WhatsApp webhooks |
-| `/api/sessions` | GET | List active sessions |
-| `/api/stats` | GET | System statistics |
+- Routes to General persona
+- Web browsing only
+- Restricted guard policy
 
 ## Guard Classification
 
-Commands are classified into safety levels:
+Commands are classified into safety levels (per persona policy):
 
 | Level | Description | Examples |
 |-------|-------------|----------|
@@ -332,11 +342,21 @@ Commands are classified into safety levels:
 ## Logs
 
 Logs are stored in `logs/`:
-- `bridge-YYYY-MM-DD.log` - Bridge activity
+- `bridge-YYYY-MM-DD.log` - Bridge activity (includes persona routing)
 - `agent-YYYY-MM-DD.log` - WhatsApp API activity
 - `error-YYYY-MM-DD.log` - Errors
 
 ## Troubleshooting
+
+### Persona not detected correctly
+- Check `config/group-mappings.json` patterns
+- Verify group name matches expected pattern (case-insensitive)
+- Check logs for "Persona routing" entries
+
+### Skills not discovered
+- Verify `BASE_PATH` in `.env` points to project root
+- Check that `skills/` folder exists with `SKILL.md` files
+- Skills use SKILL.md format, not TypeScript exports
 
 ### WhatsApp messages not sending
 - Ensure the `sendSeen: false` option is set in whatsappService.js
@@ -347,19 +367,10 @@ Logs are stored in `logs/`:
 - Check MCP config uses `node` directly, not `npx`
 - Ensure web task keywords are in the command
 
-### Skills not discovered
-- Verify `BASE_PATH` in `.env` points to project root
-- Check that `skills/` folder exists with `.ts` files
-- Restart Bridge after adding new skills
-
-### Claude CLI timeout
-- Check if Claude process produces output (idle timeout is 3 minutes)
-- Verify Claude CLI is authenticated: `claude --version`
-
 ## License
 
 Private - All rights reserved
 
 ---
 
-*Built with Claude Code + Native Skills + Playwright MCP*
+*Built with Claude Code + Native Skills + Playwright MCP + Multi-Persona System*
