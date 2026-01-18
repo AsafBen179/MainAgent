@@ -1,0 +1,9 @@
+{
+  "name": "mainagent-skills",
+  "description": "Autonomous skills for web automation, self-correction, and tactical planning",
+  "version": "1.0.0",
+  "author": {
+    "name": "MainAgent",
+    "email": "mainagent@example.com"
+  }
+}
