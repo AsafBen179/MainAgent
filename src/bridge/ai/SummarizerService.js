@@ -37,16 +37,23 @@ class SummarizerService {
     // Check for errors
     const isError = this.detectError(output);
 
-    // Get summary from AI
-    const summary = await this.client.summarize(output, {
-      commandText,
-      projectName,
-      isError
-    });
+    // Get summary from AI (only for very long outputs)
+    let summary = output;
+    const MAX_WHATSAPP_LENGTH = 4000; // WhatsApp practical limit
 
-    // Build result
+    if (output.length > MAX_WHATSAPP_LENGTH) {
+      // Only summarize if output is too long for WhatsApp
+      summary = await this.client.summarize(output, {
+        commandText,
+        projectName,
+        isError
+      });
+    }
+
+    // Build result - include original output for short responses
     const result = {
       summary,
+      originalOutput: output, // Keep original for formatting
       isError,
       executionTime,
       originalLength: output.length,
@@ -126,18 +133,25 @@ class SummarizerService {
    */
   formatForWhatsApp(result, config = {}) {
     const { successPrefix = '✅ ', errorPrefix = '❌ ' } = config;
+    const MAX_WHATSAPP_LENGTH = 4000;
 
     let message = result.isError ? errorPrefix : successPrefix;
-    message += result.summary;
 
-    // Add key points
-    if (result.keyPoints && result.keyPoints.length > 0) {
-      message += '\n\n' + result.keyPoints.join('\n');
+    // Use full output if short enough, otherwise use summary
+    const content = result.summary || result.originalOutput || '';
+
+    if (content.length <= MAX_WHATSAPP_LENGTH) {
+      // Full output fits - send it all
+      message += content;
+    } else {
+      // Truncate with indicator
+      message += content.substring(0, MAX_WHATSAPP_LENGTH - 100);
+      message += '\n\n... _(truncated - full output was ' + result.originalLength + ' chars)_';
     }
 
     // Add execution time
     if (result.executionTime) {
-      message += `\n⏱️ ${this.formatDuration(result.executionTime)}`;
+      message += `\n\n⏱️ ${this.formatDuration(result.executionTime)}`;
     }
 
     return message;

@@ -90,3 +90,7 @@ screenshots/
 test-results/
 playwright-report/
 .wwebjs_cache/
+
+# Project-specific folders (created at runtime)
+Trading/
+

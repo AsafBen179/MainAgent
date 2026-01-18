@@ -388,24 +388,8 @@ class WhatsAppService {
                 throw new Error('Message cannot be empty');
             }
 
-            let result;
-            try {
-                result = await this.client.sendMessage(chatId, message);
-            } catch (sendError) {
-                // Handle known whatsapp-web.js bug: markedUnread error
-                if (sendError.message && sendError.message.includes('markedUnread')) {
-                    logger.warn(`⚠️ markedUnread bug encountered - message likely sent to chat ${chatId}`);
-                    return {
-                        success: true,
-                        messageId: `pending-${Date.now()}`,
-                        timestamp: Math.floor(Date.now() / 1000),
-                        to: chatId,
-                        message: message,
-                        note: 'Message likely delivered (markedUnread bug workaround)'
-                    };
-                }
-                throw sendError;
-            }
+            // Use sendSeen: false to avoid the markedUnread bug in whatsapp-web.js
+            const result = await this.client.sendMessage(chatId, message, { sendSeen: false });
 
             logger.info(`✅ Message sent successfully to chat ${chatId}`, {
                 messageId: result.id.id,

@@ -1,6 +1,17 @@
-# WhatsApp-Claude Bridge
+# Unified WhatsApp Agent
 
-A WhatsApp bot that connects to Claude Code CLI for autonomous task execution.
+A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task execution with browser automation, intelligent task processing, and multi-project support.
+
+## Features
+
+- **WhatsApp Integration**: Full WhatsApp Web connection via whatsapp-web.js
+- **Claude CLI Execution**: Autonomous task execution with real-time streaming output
+- **Browser Automation**: Playwright MCP integration for web tasks (trading, research, screenshots)
+- **Smart Task Detection**: Automatic detection of web-related tasks for browser enablement
+- **AI Summarization**: OpenRouter integration for intelligent response formatting
+- **Guard System**: Command classification (GREEN/YELLOW/RED) for security
+- **Knowledge Base**: SQLite-based learning from successful/failed operations
+- **Multi-Project Support**: Group-to-project mapping for organized task execution
 
 ## Security Notice
 
@@ -18,15 +29,16 @@ A WhatsApp bot that connects to Claude Code CLI for autonomous task execution.
 ┌─────────────────┐     Webhook      ┌─────────────────┐     spawn      ┌─────────────────┐
 │  WhatsApp API   │ ───────────────> │     Bridge      │ ─────────────> │   Claude CLI    │
 │   (port 3000)   │                  │   (port 3001)   │                │                 │
-│                 │ <─────────────── │                 │ <───────────── │                 │
-│ whatsapp-web.js │     Response     │  Orchestrator   │    stdout      │  Code execution │
+│                 │ <─────────────── │                 │ <───────────── │  + Playwright   │
+│ whatsapp-web.js │     Response     │  Orchestrator   │    stdout      │    MCP Server   │
 └─────────────────┘                  └─────────────────┘                └─────────────────┘
-        │
-        │ QR Code
-        v
-   ┌─────────┐
-   │ Terminal│
-   └─────────┘
+        │                                    │
+        │ QR Code                            │ Agent Integration
+        v                                    v
+   ┌─────────┐                    ┌──────────────────────┐
+   │ Terminal│                    │  Guard + Knowledge   │
+   └─────────┘                    │  + OpenRouter AI     │
+                                  └──────────────────────┘
 ```
 
 ## Components
@@ -37,18 +49,26 @@ A WhatsApp bot that connects to Claude Code CLI for autonomous task execution.
 - **Features:**
   - QR code display in terminal
   - Session persistence
-  - Message sending/receiving
+  - Message sending/receiving with `sendSeen: false` fix
   - Webhook notifications to Bridge
+  - Hebrew language support
 
 ### Bridge (`src/bridge/`)
 - **Port:** 3001
-- **Purpose:** Claude CLI execution and response handling
+- **Purpose:** Claude CLI orchestration and response handling
 - **Features:**
   - Webhook receiver for WhatsApp messages
-  - Claude CLI spawning (`CmdExecutor.js`)
-  - Session management per chat
-  - Output processing and summarization
-  - Permission handling for sensitive operations
+  - Claude CLI spawning with stream-json output
+  - Session management per chat/project
+  - Playwright MCP for browser automation
+  - AI-powered output summarization
+  - Guard system for command classification
+  - Knowledge base for learning
+
+### Agent Integration (`src/bridge/agent/`)
+- **ExecutionGuard**: Classifies commands as safe/sensitive/dangerous
+- **KnowledgeBase**: SQLite storage for lessons learned
+- **Skills Configuration**: Web operator, self-correction, tactical planning
 
 ## Project Structure
 
@@ -59,29 +79,35 @@ src/
 │   ├── index.js                # WhatsApp API server
 │   ├── whatsappService.js      # whatsapp-web.js wrapper
 │   ├── messageHandler.js       # Message processing
-│   ├── db/                     # WhatsApp message database
 │   └── utils/                  # Logger, validator
 └── bridge/
     ├── index.js                # Bridge server entry
     ├── app.js                  # Express app setup
     ├── core/
     │   ├── BridgeOrchestrator.js   # Main orchestration logic
-    │   └── EventBus.js             # Event system
+    │   ├── EventBus.js             # Event system
+    │   └── CommandQueue.js         # Task queue management
     ├── claude/
     │   ├── CmdExecutor.js          # Claude CLI execution
     │   ├── SessionManager.js       # Chat session management
-    │   ├── OutputProcessor.js      # Process CLI output
-    │   └── PermissionHandler.js    # Handle permission requests
+    │   └── OutputProcessor.js      # Process CLI output
+    ├── agent/
+    │   ├── AgentIntegration.js     # Guard + Knowledge integration
+    │   ├── ExecutionGuard.js       # Command classification
+    │   └── KnowledgeBase.js        # Learning database
+    ├── ai/
+    │   ├── OpenRouterClient.js     # AI summarization client
+    │   └── SummarizerService.js    # Output formatting
     ├── whatsapp/
-    │   ├── WhatsAppClient.js       # API client for WhatsApp API
+    │   ├── WhatsAppClient.js       # API client
     │   ├── WebhookHandler.js       # Webhook processing
-    │   └── ResponseSender.js       # Send responses back
-    ├── db/                         # Bridge database (sql.js)
+    │   └── ResponseSender.js       # Send responses
     └── utils/                      # Config loader, logger
 
 config/
-├── bridge.config.json          # Bridge configuration
-└── allowlist.json              # Allowed users/groups
+├── guard_policy.json           # Command classification rules
+├── skills.json                 # Skills configuration
+└── bridge.config.json          # Bridge settings
 ```
 
 ## Configuration
@@ -103,30 +129,35 @@ WEBHOOK_URL=http://localhost:3001/webhook/whatsapp
 WHATSAPP_API_URL=http://localhost:3000
 
 # Claude CLI Base Path
-BASE_PATH=C:\YourProject
+BASE_PATH=C:\MainAgent
+
+# Browser Mode
+HEADED_MODE=true
+
+# OpenRouter API (for AI summarization)
+OPENROUTER_API_KEY=your-api-key
+OPENROUTER_MODEL=xiaomi/mimo-v2-flash:free
 
 # Admin phones (comma separated)
 ADMIN_PHONES=972501234567
 ```
 
-### Bridge Config (`config/bridge.config.json`)
-```json
-{
-  "server": { "port": 3001, "host": "127.0.0.1" },
-  "basePath": "C:\\YourProject",
-  "whatsappApi": { "baseUrl": "http://localhost:3000" },
-  "claudeCode": {
-    "executable": "claude",
-    "sessionTimeout": 3600000,
-    "maxConcurrentSessions": 10
-  }
-}
+### Playwright MCP Configuration
+The Bridge automatically enables Playwright MCP for web-related tasks. The MCP config is located at:
 ```
+~/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/playwright/.mcp.json
+```
+
+Web tasks are detected by keywords like: `tradingview`, `crypto`, `analyze`, `chart`, `browse`, `website`, etc.
 
 ## Installation
 
 ```bash
+# Install dependencies
 npm install
+
+# Install Playwright MCP globally (for browser automation)
+npm install -g @playwright/mcp
 ```
 
 ## Usage
@@ -149,13 +180,29 @@ npm run start:bridge
 
 ## Message Flow
 
-1. **User sends WhatsApp message** to connected number
+1. **User sends WhatsApp message** to connected number/group
 2. **WhatsApp API** receives message via whatsapp-web.js
 3. **Webhook sent** to Bridge at `/webhook/whatsapp`
-4. **Bridge** spawns Claude CLI with the message as prompt
-5. **Claude CLI** executes and returns output
-6. **Bridge** processes output and sends response
-7. **WhatsApp API** delivers response to user
+4. **Guard classifies** command (GREEN/YELLOW/RED)
+5. **Bridge** detects if web task, enables Playwright MCP if needed
+6. **Claude CLI** executes with streaming output
+7. **Output processed** and summarized by OpenRouter AI
+8. **Response sent** back to WhatsApp group
+
+## Web Task Examples
+
+The agent can handle web-based tasks with visible browser automation:
+
+```
+# Trading Analysis
+"Analyze ETH/BTC ratio on TradingView"
+
+# Web Research
+"Check the latest news about Bitcoin on CoinDesk"
+
+# Screenshot capture
+"Take a screenshot of the Google homepage"
+```
 
 ## API Endpoints
 
@@ -167,13 +214,27 @@ npm run start:bridge
 | `/api/qr` | GET | Get QR code |
 | `/api/connect` | POST | Initialize connection |
 | `/api/send` | POST | Send message |
-| `/docs` | GET | API documentation |
+| `/api/send-to-chat` | POST | Send to specific chat |
+| `/docs` | GET | API documentation (Redoc) |
 
 ### Bridge (port 3001)
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Health check |
 | `/webhook/whatsapp` | POST | Receive WhatsApp webhooks |
+| `/api/sessions` | GET | List active sessions |
+| `/api/stats` | GET | System statistics |
+
+## Guard Classification
+
+Commands are classified into safety levels:
+
+| Level | Description | Examples |
+|-------|-------------|----------|
+| **GREEN** | Safe operations | Read files, git status, npm list |
+| **YELLOW** | Sensitive but allowed | npm install, git commit |
+| **RED** | Requires approval | rm commands, git push --force |
+| **BLACKLISTED** | Always blocked | System modification, credential access |
 
 ## Logs
 
@@ -182,10 +243,25 @@ Logs are stored in `logs/`:
 - `agent-YYYY-MM-DD.log` - WhatsApp API activity
 - `error-YYYY-MM-DD.log` - Errors
 
+## Troubleshooting
+
+### WhatsApp messages not sending
+- Ensure the `sendSeen: false` option is set in whatsappService.js
+- Check if WhatsApp session is authenticated (look for "ready" in logs)
+
+### Browser not opening for web tasks
+- Verify Playwright MCP is installed: `npm install -g @playwright/mcp`
+- Check MCP config uses `node` directly, not `npx`
+- Ensure web task keywords are in the command
+
+### Claude CLI timeout
+- Check if Claude process produces output (idle timeout is 3 minutes)
+- Verify Claude CLI is authenticated: `claude --version`
+
 ## License
 
 Private - All rights reserved
 
 ---
 
-*Built with Claude Code*
+*Built with Claude Code + Playwright MCP*

@@ -146,42 +146,32 @@ Just output the summary text directly. Use Hebrew if the input is in Hebrew.`;
 
   /**
    * Fallback summarization when API is not available
+   * Just return the actual output (truncated if needed)
    */
   fallbackSummarize(output) {
-    // Extract key information
-    let summary = '';
-
-    // Check for success indicators
-    if (/completed|success|done|finished/i.test(output)) {
-      summary += 'Completed successfully. ';
+    if (!output || output.trim().length === 0) {
+      return 'Task completed.';
     }
 
-    // Check for errors
-    if (/error|failed|exception/i.test(output)) {
-      const errorMatch = output.match(/error[:\s]+(.{0,100})/i);
-      if (errorMatch) {
-        summary += `Error: ${errorMatch[1].trim()}. `;
-      } else {
-        summary += 'Error occurred. ';
-      }
+    // For short output, return as-is
+    if (output.length <= 2000) {
+      return output.trim();
     }
 
-    // Check for file operations
-    const fileMatches = output.match(/(?:created|modified|deleted|read)\s+['"]?([^'"]+)['"]?/gi);
-    if (fileMatches && fileMatches.length > 0) {
-      summary += `Files: ${fileMatches.slice(0, 3).join(', ')}`;
-      if (fileMatches.length > 3) {
-        summary += ` +${fileMatches.length - 3} more`;
-      }
+    // For longer output, truncate but keep the important parts
+    const maxLength = 2000;
+    let summary = output.substring(0, maxLength);
+
+    // Try to cut at a sentence boundary
+    const lastPeriod = summary.lastIndexOf('.');
+    const lastNewline = summary.lastIndexOf('\n');
+    const cutPoint = Math.max(lastPeriod, lastNewline);
+
+    if (cutPoint > maxLength * 0.7) {
+      summary = summary.substring(0, cutPoint + 1);
     }
 
-    // If no key info found, truncate output
-    if (!summary) {
-      summary = output.substring(0, 400);
-      if (output.length > 400) {
-        summary += '...';
-      }
-    }
+    summary += '\n\n_(Output truncated)_';
 
     return summary.trim();
   }

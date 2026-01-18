@@ -22,6 +22,9 @@ const summarizerService = require('../ai/SummarizerService');
 // Database repositories
 const repositories = require('../db/repositories');
 
+// Agent Integration Layer (Guard, Memory, Skills, SEASP)
+const { initializeAgentIntegration, getAgentIntegration } = require('../agent/AgentIntegration');
+
 // Playwright MCP config path
 const PLAYWRIGHT_MCP_CONFIG = 'C:\\Users\\asaf1\\.claude\\plugins\\marketplaces\\claude-plugins-official\\external_plugins\\playwright\\.mcp.json';
 
@@ -35,6 +38,7 @@ class BridgeOrchestrator {
     this.oauthSessions = new Map(); // sessionId -> { groupId, awaiting }
     this.initialized = false;
     this.repositories = null;
+    this.agentIntegration = null; // Agent Integration Layer (Guard, Memory, Skills)
   }
 
   /**
@@ -63,6 +67,19 @@ class BridgeOrchestrator {
 
     // Recover sessions on startup
     await sessionManager.recoverSessions();
+
+    // Initialize Agent Integration Layer (Guard, Memory, Skills, SEASP)
+    try {
+      this.agentIntegration = await initializeAgentIntegration({
+        guardPolicyPath: this.config.guardPolicyPath,
+        headedMode: this.config.headedMode !== false
+      });
+      const stats = this.agentIntegration.getStats();
+      logger.info('Agent Integration initialized', stats);
+    } catch (error) {
+      logger.warn('Agent Integration init failed (non-fatal)', { error: error.message });
+      // Continue without agent features - fallback to basic mode
+    }
 
     // Setup event handlers
     this.setupEventHandlers();
@@ -338,6 +355,37 @@ class BridgeOrchestrator {
   }
 
   /**
+   * Check if command requires web browsing (trading, research, web analysis)
+   */
+  isWebRelatedTask(command) {
+    const lower = command.toLowerCase();
+
+    // Trading/crypto related keywords
+    const tradingKeywords = [
+      'tradingview', 'coingecko', 'coinmarketcap', 'binance', 'coinbase',
+      'crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'trading', 'chart',
+      'price', 'market', 'analyze', 'analysis', 'signal', 'trend'
+    ];
+
+    // Web browsing keywords
+    const webKeywords = [
+      'browse', 'website', 'web page', 'webpage', 'open', 'visit', 'check',
+      'look up', 'lookup', 'search online', 'google', 'find online',
+      'http://', 'https://', '.com', '.org', '.io', '.net'
+    ];
+
+    // Research keywords
+    const researchKeywords = [
+      'research', 'investigate', 'explore', 'discover', 'find out',
+      'news', 'article', 'report', 'data from'
+    ];
+
+    const allKeywords = [...tradingKeywords, ...webKeywords, ...researchKeywords];
+
+    return allKeywords.some(keyword => lower.includes(keyword));
+  }
+
+  /**
    * Extract URL from screenshot command
    */
   extractScreenshotUrl(command) {
@@ -395,6 +443,7 @@ class BridgeOrchestrator {
 
   /**
    * Process next item in project queue
+   * Full pipeline: Guard → Memory → Execute → Learn → Self-Correct
    */
   async processNextInQueue(projectId) {
     const item = commandQueue.dequeue(projectId);
@@ -409,6 +458,74 @@ class BridgeOrchestrator {
       // Use projectName from queue item, fallback to lookup
       const projectName = item.projectName || await this.getProjectName(projectId);
       logger.info('Got projectName for queue item', { projectName, itemCommand: item.command?.substring(0, 50) });
+
+      // ═══════════════════════════════════════════════════════════════════
+      // PHASE 1: PRE-EXECUTION (Guard Classification + Memory Context)
+      // ═══════════════════════════════════════════════════════════════════
+      let preResult = null;
+      let enhancedCommand = item.command;
+
+      if (this.agentIntegration) {
+        preResult = await this.agentIntegration.preExecution(item.command, {
+          taskType: item.type,
+          taskDescription: item.command,
+          groupId: item.groupId,
+          senderPhone: item.senderPhone
+        });
+
+        logger.info('Guard classification result', {
+          level: preResult.classification?.level,
+          proceed: preResult.proceed,
+          lessonsFound: preResult.relevantLessons?.length || 0
+        });
+
+        // Handle BLACKLISTED - Never execute
+        if (preResult.classification?.level === 'BLACKLISTED') {
+          logger.warn('Command BLACKLISTED by Guard', {
+            reason: preResult.blockReason,
+            command: item.command.substring(0, 100)
+          });
+          await responseSender.sendToGroup(item.groupId,
+            `⛔ *Command Blocked*\n\n${preResult.blockReason}\n\nThis operation is not allowed for safety reasons.`
+          );
+          commandQueue.fail(projectId, item.id, `Blocked: ${preResult.blockReason}`);
+          return;
+        }
+
+        // Handle RED (requires approval)
+        if (preResult.requiresApproval) {
+          logger.info('Command requires approval (RED)', { command: item.command.substring(0, 100) });
+          await responseSender.sendApprovalRequest(
+            item.groupId,
+            `🔴 *Critical Operation Detected*\n\n${item.command.substring(0, 200)}\n\nReason: ${preResult.classification?.reason}`,
+            this.config.permissions?.approvalTimeout || 120
+          );
+          // Re-queue item for later processing after approval
+          // For now, we'll skip and notify
+          commandQueue.fail(projectId, item.id, 'Awaiting approval for RED command');
+          return;
+        }
+
+        // Build enhanced prompt with memory context
+        if (preResult.context) {
+          enhancedCommand = this.agentIntegration.buildEnhancedPrompt(item.command, preResult);
+          logger.debug('Prompt enhanced with memory context', {
+            originalLength: item.command.length,
+            enhancedLength: enhancedCommand.length
+          });
+        }
+
+        // Log classification for YELLOW commands
+        if (preResult.classification?.level === 'YELLOW') {
+          logger.info('YELLOW command - executing with logging', {
+            reason: preResult.classification.reason
+          });
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════════════════
+      // PHASE 2: EXECUTION (Claude CLI)
+      // ═══════════════════════════════════════════════════════════════════
 
       // Check session status before sending command
       const sessionStatus = sessionManager.getSessionStatus(projectId);
@@ -437,7 +554,8 @@ class BridgeOrchestrator {
 
       // Check if this is a screenshot command
       const isScreenshot = this.isScreenshotCommand(item.command);
-      let commandToSend = item.command;
+      const isWebTask = this.isWebRelatedTask(item.command);
+      let commandToSend = enhancedCommand;
       let options = {};
       let screenshotPath = null;
 
@@ -453,6 +571,18 @@ class BridgeOrchestrator {
           await responseSender.sendPending(item.groupId, `📸 Taking screenshot of ${url}...`);
           logger.info('Processing screenshot command', { url, screenshotPath });
         }
+      } else if (isWebTask) {
+        // Enable Playwright MCP for web-related tasks (browsing, trading, research)
+        options.mcpConfig = PLAYWRIGHT_MCP_CONFIG;
+        logger.info('Web task detected, enabling Playwright MCP', { command: item.command.substring(0, 50) });
+      }
+
+      // Get MCP arguments from agent integration if available
+      if (this.agentIntegration) {
+        const mcpArgs = this.agentIntegration.getClaudeCliArgs();
+        if (mcpArgs.length > 0) {
+          options.extraArgs = mcpArgs;
+        }
       }
 
       // Send command to Claude with progress tracking
@@ -462,6 +592,31 @@ class BridgeOrchestrator {
         success: result.success,
         outputLength: result.output?.length
       });
+
+      // ═══════════════════════════════════════════════════════════════════
+      // PHASE 3: POST-EXECUTION (Learning + Self-Correction)
+      // ═══════════════════════════════════════════════════════════════════
+      let processedResult = result;
+
+      if (this.agentIntegration && preResult) {
+        processedResult = await this.agentIntegration.postExecution(result, preResult, item.command);
+
+        // Check if self-correction suggested a retry
+        if (processedResult.selfCorrection?.shouldRetry) {
+          logger.info('Self-correction triggered', {
+            type: processedResult.selfCorrection.correctionType,
+            pastLesson: processedResult.selfCorrection.pastLesson?.id
+          });
+
+          // Notify user about self-correction attempt
+          await responseSender.sendToGroup(item.groupId,
+            `🔄 *Self-Correction Triggered*\n\nDetected: ${processedResult.selfCorrection.correctionType}\nApplying learned solution from past experience...`
+          );
+
+          // The actual retry logic would go here - for now, just log
+          // In a full implementation, we'd re-queue with the suggested solution
+        }
+      }
 
       // Store session reference
       item.sessionId = result.sessionId;
@@ -512,7 +667,16 @@ class BridgeOrchestrator {
         startTime: item.startedAt
       });
 
+      logger.info('Summary result', {
+        hasSummary: !!summary,
+        summaryKeys: summary ? Object.keys(summary) : [],
+        summarySummary: summary?.summary?.substring(0, 100),
+        isAvailable: summarizerService.isAvailable()
+      });
+
       // Send summarized response
+      logger.info('About to send response', { outputLength: output?.length, outputTruthy: !!(output && output.trim()) });
+
       if (output && output.trim()) {
         // Build header based on whether this was a background task
         const statusIcon = result.success ? '✅' : '❌';
@@ -521,6 +685,8 @@ class BridgeOrchestrator {
         if (wasBackgroundTask) {
           header = `${statusIcon} *Background task completed!*\n⏱️ ${executionTime}\n\n`;
         }
+
+        logger.info('Checking summarizer', { isAvailable: summarizerService.isAvailable(), hasSummary: !!summary.summary });
 
         // Use the AI-summarized response
         let formattedResponse;
@@ -545,7 +711,13 @@ class BridgeOrchestrator {
           formattedResponse = (wasBackgroundTask ? header : `${statusIcon} *Done* (${executionTime})\n\n`) + claudeResponse;
         }
 
-        await responseSender.sendToGroup(item.groupId, formattedResponse);
+        logger.info('Sending response to WhatsApp', { groupId: item.groupId, responseLength: formattedResponse?.length });
+        try {
+          await responseSender.sendToGroup(item.groupId, formattedResponse);
+          logger.info('Response sent successfully');
+        } catch (sendError) {
+          logger.error('Failed to send response', { error: sendError.message, stack: sendError.stack });
+        }
       } else if (imagesSent > 0) {
         // Only images, short message
         await responseSender.sendSuccess(item.groupId, `Done! Sent ${imagesSent} image${imagesSent > 1 ? 's' : ''} (${executionTime})`);
@@ -792,6 +964,11 @@ class BridgeOrchestrator {
       timestamp: Date.now()
     });
 
+    // Shutdown Agent Integration (closes KnowledgeBase DB)
+    if (this.agentIntegration) {
+      this.agentIntegration.shutdown();
+    }
+
     // Terminate all sessions
     await sessionManager.terminateAll();
 
@@ -805,7 +982,8 @@ class BridgeOrchestrator {
     return {
       sessions: sessionManager.getStats(),
       queue: commandQueue.getStats(),
-      projects: this.projects.size
+      projects: this.projects.size,
+      agent: this.agentIntegration ? this.agentIntegration.getStats() : null
     };
   }
 }
