@@ -4,7 +4,7 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "noImplicitAny": false,
     "esModuleInterop": true,
@@ -15,11 +15,12 @@
     "declarationMap": true,
     "sourceMap": true,
     "moduleResolution": "node",
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"],
+      "@skills/*": ["./skills/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "skills/**/*"],
   "exclude": ["node_modules", "dist"]
 }

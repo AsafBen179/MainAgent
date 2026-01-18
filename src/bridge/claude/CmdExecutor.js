@@ -5,14 +5,22 @@ const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger');
 const eventBus = require('../core/EventBus');
 
+// Base path for running Claude CLI - this is where skills/ folder is located
+const BASE_PATH = process.env.BASE_PATH || path.resolve(__dirname, '..', '..', '..');
+
 /**
  * Execute Claude Code CLI with real-time progress tracking
  * Each command runs in its own process for reliability
+ *
+ * IMPORTANT: Claude CLI runs from BASE_PATH (project root) so it can discover
+ * skills in the root skills/ directory. The projectPath is passed to Claude
+ * as context but the cwd is always BASE_PATH.
  */
 class CmdExecutor {
   constructor() {
     this.sessions = new Map(); // sessionId -> session info
     this.progressCallbacks = new Map(); // sessionId -> callback function
+    this.basePath = BASE_PATH; // Root path where skills/ folder exists
   }
 
   /**
@@ -205,15 +213,18 @@ class CmdExecutor {
         CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR || 'C:\\Users\\asaf1\\.claude'
       };
 
+      // Run from BASE_PATH so Claude discovers skills/ folder
+      // The projectPath is still used for context but cwd is the root
       logger.debug('Spawning Claude directly', {
         sessionId,
         claudePath,
         args: claudeArgs.slice(0, 3),
-        cwd: sessionInfo.projectPath
+        cwd: this.basePath,
+        projectContext: sessionInfo.projectPath
       });
 
       const proc = spawn(claudePath, claudeArgs, {
-        cwd: sessionInfo.projectPath,
+        cwd: this.basePath, // Run from root to discover skills/
         stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true,
         env: claudeEnv
