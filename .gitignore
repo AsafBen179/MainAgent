@@ -89,3 +89,4 @@ temp/
 screenshots/
 test-results/
 playwright-report/
+.wwebjs_cache/
