@@ -210,7 +210,9 @@ class CmdExecutor {
         ...process.env,
         USERPROFILE: process.env.CLAUDE_USER_PROFILE || 'C:\\Users\\asaf1',
         HOME: process.env.CLAUDE_USER_PROFILE || 'C:\\Users\\asaf1',
-        CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR || 'C:\\Users\\asaf1\\.claude'
+        CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR || 'C:\\Users\\asaf1\\.claude',
+        // Load Binance auth session for Playwright MCP browser automation
+        PLAYWRIGHT_MCP_STORAGE_STATE: process.env.PLAYWRIGHT_MCP_STORAGE_STATE || path.join(this.basePath, 'sessions', 'binance_auth.json')
       };
 
       // Run from BASE_PATH so Claude discovers skills/ folder
@@ -253,8 +255,14 @@ class CmdExecutor {
         reject(new Error('Command timeout after 10 minutes'));
       }, 10 * 60 * 1000);
 
-      // Idle timeout - kill if no output for 3 minutes (stream-json provides frequent updates)
-      const IDLE_TIMEOUT_MS = 3 * 60 * 1000;
+      // Idle timeout - kill if no output for a while
+      // Browser automation tasks need more time (Playwright startup, page loads, etc.)
+      const hasMcpConfig = !!options.mcpConfig;
+      const IDLE_TIMEOUT_MS = hasMcpConfig ? 5 * 60 * 1000 : 3 * 60 * 1000; // 5 min for browser, 3 min otherwise
+      logger.debug('Idle timeout configured', {
+        timeout: IDLE_TIMEOUT_MS / 1000 + 's',
+        hasBrowserMcp: hasMcpConfig
+      });
       let lastOutputTime = Date.now();
 
       const idleCheckInterval = setInterval(() => {
@@ -529,7 +537,14 @@ class CmdExecutor {
       'Task': '🤖',
       'WebFetch': '🌐',
       'WebSearch': '🔍',
-      'TodoWrite': '📋'
+      'TodoWrite': '📋',
+      // Playwright MCP tools
+      'mcp__playwright__browser_navigate': '🌐',
+      'mcp__playwright__browser_snapshot': '📸',
+      'mcp__playwright__browser_take_screenshot': '📷',
+      'mcp__playwright__browser_click': '👆',
+      'mcp__playwright__browser_wait': '⏳',
+      'mcp__playwright__browser_type': '⌨️'
     };
 
     const toolVerbs = {
@@ -542,7 +557,14 @@ class CmdExecutor {
       'Task': 'Spawning agent',
       'WebFetch': 'Fetching URL',
       'WebSearch': 'Searching web',
-      'TodoWrite': 'Updating tasks'
+      'TodoWrite': 'Updating tasks',
+      // Playwright MCP tools
+      'mcp__playwright__browser_navigate': 'Navigating browser',
+      'mcp__playwright__browser_snapshot': 'Taking snapshot',
+      'mcp__playwright__browser_take_screenshot': 'Taking screenshot',
+      'mcp__playwright__browser_click': 'Clicking element',
+      'mcp__playwright__browser_wait': 'Waiting for page',
+      'mcp__playwright__browser_type': 'Typing text'
     };
 
     const elapsed = this.formatElapsed(elapsedSeconds);

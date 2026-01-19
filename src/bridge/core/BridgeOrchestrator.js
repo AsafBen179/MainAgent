@@ -246,6 +246,11 @@ class BridgeOrchestrator {
 
     // Route to appropriate persona based on group context
     let personaContext = null;
+    logger.info('Checking persona router', {
+      hasRouter: !!this.personaRouter,
+      groupName,
+      groupId: groupId?.substring(0, 20)
+    });
     if (this.personaRouter) {
       const routing = this.personaRouter.route({
         groupId,
@@ -253,11 +258,15 @@ class BridgeOrchestrator {
         isGroupMessage: isGroupMessage !== false
       });
       personaContext = routing;
-      logger.info('Persona routing', {
+      logger.info('Persona routing result', {
         personaName: routing.personaName,
         matchType: routing.matchType,
+        prioritySkill: routing.persona?.prioritySkill,
+        allowedSkills: routing.persona?.allowedSkills,
         groupName
       });
+    } else {
+      logger.warn('PersonaRouter not available - using default behavior');
     }
 
     // Classify operation type
@@ -392,11 +401,16 @@ class BridgeOrchestrator {
   isWebRelatedTask(command) {
     const lower = command.toLowerCase();
 
-    // Trading/crypto related keywords
+    // Trading/crypto related keywords (English + Hebrew)
     const tradingKeywords = [
       'tradingview', 'coingecko', 'coinmarketcap', 'binance', 'coinbase',
       'crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'trading', 'chart',
-      'price', 'market', 'analyze', 'analysis', 'signal', 'trend'
+      'price', 'market', 'analyze', 'analysis', 'signal', 'trend',
+      // Additional crypto terms
+      'sol', 'usdt', 'usdc', 'xrp', 'ada', 'doge', 'bnb', 'avax', 'matic',
+      'smc', 'order block', 'fvg', 'fair value gap', 'liquidity', 'bos', 'choch',
+      // Hebrew trading terms
+      'ניתוח', 'גרף', 'מחיר', 'מסחר', 'קריפטו', 'תרשים', 'טרייד', 'מגמה'
     ];
 
     // Web browsing keywords
@@ -617,6 +631,15 @@ class BridgeOrchestrator {
         // Enable Playwright MCP for web-related tasks (browsing, trading, research)
         options.mcpConfig = PLAYWRIGHT_MCP_CONFIG;
         logger.info('Web task detected, enabling Playwright MCP', { command: item.command.substring(0, 50) });
+      }
+
+      // ALWAYS enable Playwright MCP for trading personas (requiresBrowser flag)
+      if (item.personaContext?.persona?.requiresBrowser && !options.mcpConfig) {
+        options.mcpConfig = PLAYWRIGHT_MCP_CONFIG;
+        logger.info('Trading persona requires browser - enabling Playwright MCP', {
+          persona: item.personaContext.personaName,
+          command: item.command.substring(0, 50)
+        });
       }
 
       // Get MCP arguments from agent integration if available

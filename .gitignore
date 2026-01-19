@@ -9,6 +9,12 @@ sessions/**
 **/session-*
 *.session
 
+# Browser Authentication State (NEVER COMMIT - contains login cookies)
+**/tv_auth.json
+**/auth_state*.json
+**/*_auth.json
+**/storageState.json
+
 # Local Databases (may contain private data)
 # Only exclude top-level memory folder, not src/core/memory/
 /memory/

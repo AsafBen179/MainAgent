@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS task_history (
   error TEXT,
   duration_ms INTEGER,
   lessons_applied TEXT,
+  category TEXT,
+  persona TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -82,6 +84,61 @@ class KnowledgeBase {
   initializeSchema() {
     if (this.db) {
       this.db.exec(CREATE_TABLES_SQL);
+
+      // Run migrations for existing databases
+      this.runMigrations();
+    }
+  }
+
+  /**
+   * Run schema migrations for existing databases
+   */
+  runMigrations() {
+    try {
+      // Check if task_history has all required columns
+      const columns = this.db.prepare("PRAGMA table_info(task_history)").all();
+      const columnNames = columns.map(c => c.name);
+
+      // Add task_description column if missing (for very old databases)
+      if (!columnNames.includes('task_description')) {
+        this.db.exec('ALTER TABLE task_history ADD COLUMN task_description TEXT');
+        logger.info('Migration: Added task_description column to task_history');
+      }
+
+      // Add command_executed column if missing
+      if (!columnNames.includes('command_executed')) {
+        this.db.exec('ALTER TABLE task_history ADD COLUMN command_executed TEXT');
+        logger.info('Migration: Added command_executed column to task_history');
+      }
+
+      // Add category column if missing
+      if (!columnNames.includes('category')) {
+        this.db.exec('ALTER TABLE task_history ADD COLUMN category TEXT');
+        logger.info('Migration: Added category column to task_history');
+      }
+
+      // Add persona column if missing
+      if (!columnNames.includes('persona')) {
+        this.db.exec('ALTER TABLE task_history ADD COLUMN persona TEXT');
+        logger.info('Migration: Added persona column to task_history');
+      }
+
+      // Add lessons_applied column if missing
+      if (!columnNames.includes('lessons_applied')) {
+        this.db.exec('ALTER TABLE task_history ADD COLUMN lessons_applied TEXT');
+        logger.info('Migration: Added lessons_applied column to task_history');
+      }
+
+      // Create indexes for new columns (safe to run multiple times)
+      try {
+        this.db.exec('CREATE INDEX IF NOT EXISTS idx_task_history_category ON task_history(category)');
+        this.db.exec('CREATE INDEX IF NOT EXISTS idx_task_history_persona ON task_history(persona)');
+      } catch (indexError) {
+        // Indexes might already exist or columns might not exist - both are ok
+        logger.debug('Index creation note', { error: indexError.message });
+      }
+    } catch (error) {
+      logger.warn('Migration check failed (non-fatal)', { error: error.message });
     }
   }
 
@@ -213,10 +270,12 @@ class KnowledgeBase {
       const stmt = this.db.prepare(`
         INSERT INTO task_history (
           task_type, task_description, command_executed,
-          success, output, error, duration_ms, lessons_applied
+          success, output, error, duration_ms, lessons_applied,
+          category, persona
         ) VALUES (
           @task_type, @task_description, @command_executed,
-          @success, @output, @error, @duration_ms, @lessons_applied
+          @success, @output, @error, @duration_ms, @lessons_applied,
+          @category, @persona
         )
       `);
 
@@ -228,7 +287,9 @@ class KnowledgeBase {
         output: entry.output ? entry.output.substring(0, 10000) : null,
         error: entry.error || null,
         duration_ms: entry.duration_ms || null,
-        lessons_applied: entry.lessons_applied ? JSON.stringify(entry.lessons_applied) : null
+        lessons_applied: entry.lessons_applied ? JSON.stringify(entry.lessons_applied) : null,
+        category: entry.category || null,
+        persona: entry.persona || null
       });
 
       return result.lastInsertRowid;

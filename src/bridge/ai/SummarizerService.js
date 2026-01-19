@@ -23,7 +23,7 @@ class SummarizerService {
    * Summarize command output
    */
   async summarizeOutput(output, context = {}) {
-    const { commandText, projectName, startTime } = context;
+    const { commandText, projectName, startTime, personaContext } = context;
 
     logger.info('Summarizing output', {
       outputLength: output?.length || 0,
@@ -37,30 +37,75 @@ class SummarizerService {
     // Check for errors
     const isError = this.detectError(output);
 
-    // Get summary from AI (only for very long outputs)
-    let summary = output;
-    const MAX_WHATSAPP_LENGTH = 4000; // WhatsApp practical limit
+    // Check if output already contains Executive Summary
+    const executiveSummary = this.extractExecutiveSummary(output);
 
-    if (output.length > MAX_WHATSAPP_LENGTH) {
-      // Only summarize if output is too long for WhatsApp
+    let summary = output;
+    const MAX_WHATSAPP_LENGTH = 4000;
+
+    if (executiveSummary) {
+      // Executive Summary found - use it directly
+      logger.info('Executive Summary found in output');
+      summary = executiveSummary;
+    } else if (output.length > MAX_WHATSAPP_LENGTH) {
+      // No Executive Summary and output too long - use AI to summarize
       summary = await this.client.summarize(output, {
         commandText,
         projectName,
         isError
       });
     }
+    // Otherwise keep original output as-is (it's short enough)
 
-    // Build result - include original output for short responses
+    // Build result
     const result = {
       summary,
-      originalOutput: output, // Keep original for formatting
+      originalOutput: output,
       isError,
       executionTime,
       originalLength: output.length,
-      keyPoints: this.extractKeyPoints(output)
+      keyPoints: this.extractKeyPoints(output),
+      hasExecutiveSummary: !!executiveSummary
     };
 
     return result;
+  }
+
+  /**
+   * Extract Executive Summary block from output
+   * Returns the summary block if found, null otherwise
+   */
+  extractExecutiveSummary(output) {
+    if (!output) return null;
+
+    // Look for the Executive Summary block
+    const summaryPatterns = [
+      // Pattern 1: Full block with emoji header
+      /📌\s*EXECUTIVE SUMMARY[\s\S]*?════════════════════════════════════════════════════════[\s\S]*?════════════════════════════════════════════════════════/,
+      // Pattern 2: MARKET DISCONNECT block (for trading conflicts)
+      /⚠️\s*MARKET DISCONNECT[\s\S]*?={50,}[\s\S]*?NO ENTRY\. NO THESIS\. PATIENCE\.[\s\S]*?={50,}/,
+      // Pattern 3: Simpler executive summary (may not have full borders)
+      /📌\s*EXECUTIVE SUMMARY[\s\S]*?(?:MTF CONSENSUS:|🛡️ Risk:)[^\n]*(?:\n[^\n📌]*)?/
+    ];
+
+    for (const pattern of summaryPatterns) {
+      const match = output.match(pattern);
+      if (match) {
+        logger.info('Executive Summary pattern matched', {
+          patternIndex: summaryPatterns.indexOf(pattern),
+          matchLength: match[0].length
+        });
+        return match[0].trim();
+      }
+    }
+
+    // Fallback: Look for any structured block at the end
+    const lastBlockMatch = output.match(/📌[^📌]*$/s);
+    if (lastBlockMatch && lastBlockMatch[0].length > 100) {
+      return lastBlockMatch[0].trim();
+    }
+
+    return null;
   }
 
   /**

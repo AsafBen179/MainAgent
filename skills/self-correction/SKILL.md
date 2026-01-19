@@ -16,6 +16,21 @@ allowed-tools:
 
 You are an autonomous self-correcting agent. When web automation fails, you MUST analyze the failure, find alternatives, and apply permanent fixes to the codebase.
 
+---
+
+## ⛔ PLATFORM RULE: BINANCE DEMO ONLY
+
+```
+For ALL trading-related self-correction:
+✅ Use ONLY: https://demo.binance.com/en/*
+⛔ NEVER use: tradingview.com (deprecated)
+⛔ NEVER use: www.binance.com (real money)
+
+If fixing a selector for trading analysis → Target demo.binance.com
+```
+
+---
+
 ## Error Categories
 
 When an error occurs, categorize it immediately:
@@ -146,9 +161,9 @@ Example fix workflow:
 Output a learning record:
 ```
 LEARNING_RECORD:
-- Site: tradingview.com
-- Old Selector: .tv-symbol-price-quote__value
-- New Selector: [data-testid="qc-price"]
+- Site: demo.binance.com
+- Old Selector: .showPrice
+- New Selector: [data-testid="last-price"]
 - Reason: Class name changed in site update
 - Confidence: 95%
 - Date: [timestamp]
@@ -167,26 +182,34 @@ LEARNING_RECORD:
 
 ## Site-Specific Selector Memory
 
-### TradingView (tradingview.com)
+### Binance DEMO (demo.binance.com) - PRIMARY PLATFORM
 ```
-Price: [data-testid="qc-price"] OR .tv-symbol-price-quote__value
-Change %: .tv-symbol-price-quote__change-value
-Chart: .chart-markup-table canvas
-Volume: .valueItem-3H2Vhgkg
+⚠️ ALL TRADING ANALYSIS MUST USE demo.binance.com ONLY
+
+Price: .showPrice OR [class*="showPrice"] OR [data-testid="last-price"]
+Volume: .subValue OR [data-testid="volume"]
+Order Book: .orderbook-container OR [data-testid="orderbook"]
+Buy Button: [data-testid="submit-buy"] OR button.buy-button
+Sell Button: [data-testid="submit-sell"] OR button.sell-button
+TradingView Tab: button:has-text("TradingView")
+Timeframe: .timeframe-selector button
 ```
 
-### CoinGecko (coingecko.com)
+### TradingView (tradingview.com) - DEPRECATED
+```
+⛔ DO NOT USE tradingview.com for trading analysis
+⛔ Use demo.binance.com instead (has TradingView charts built-in)
+
+If selector needed for TradingView embedded in Binance:
+Price: [data-testid="qc-price"] OR .tv-symbol-price-quote__value
+Chart: .chart-markup-table canvas
+```
+
+### CoinGecko (coingecko.com) - For price reference only
 ```
 Price: [data-converter-target="price"] OR .tw-text-3xl
 Change: [data-price-change-percentage]
 Market Cap: [data-stat="market_cap"]
-```
-
-### Binance (binance.com)
-```
-Price: .showPrice OR [class*="showPrice"]
-Volume: .subValue
-Trade Button: [data-testid="trade-button"]
 ```
 
 ### Zeet/Israeli Beaches
@@ -218,3 +241,98 @@ SELF_CORRECTION_RESULT:
 4. **Document changes** - Future you needs to understand why
 5. **Test before committing** - Verify the new selector works
 6. **Report unfixable issues** - Some things need human intervention
+
+---
+
+## UNIFIED EXECUTIVE PROTOCOL INTEGRATION
+
+### Pre-Correction Learning Loop
+
+**Before attempting any correction, query KnowledgeBase:**
+
+```
+BRIDGE_SIGNAL:LEARNING_QUERY
+{
+  "phase": "pre_task",
+  "query": "selector_fix [site_domain] [element_type]",
+  "purpose": "Retrieve known working selectors and past fixes"
+}
+
+→ Check for:
+  - Previously fixed selectors for this site
+  - Pattern of selector changes (site redesigns)
+  - Alternative selectors that worked before
+  - Known anti-bot measures
+```
+
+### Post-Correction Learning Save
+
+**CRITICAL: Save EVERY successful fix to prevent future failures:**
+
+```
+BRIDGE_SIGNAL:LEARNING_SAVE
+{
+  "phase": "post_task",
+  "task_type": "self_correction",
+  "site": "[domain]",
+  "outcome": "success|partial|failed",
+  "old_selector": "[what failed]",
+  "new_selector": "[what works]",
+  "selector_confidence": [0-100],
+  "file_updated": "[path if permanent fix applied]",
+  "lesson": "[Why it failed and how we fixed it]"
+}
+```
+
+### Executive Summary Format
+
+**End EVERY self-correction with:**
+
+```
+📌 EXECUTIVE SUMMARY
+════════════════════════════════════════════════════════
+📋 Task: Self-correction for [site/element]
+📝 Bottom Line: [Fixed/Unable to fix] selector for [element purpose]
+
+📊 Key Metrics:
+  • Error Category: [selector_outdated/timeout/dynamic/etc]
+  • Old Selector: [failed selector]
+  • New Selector: [working selector]
+  • Confidence: [X%]
+  • File Updated: [path or N/A]
+
+⚡ Action: [Retry original task / Escalate to user / Skip element]
+
+🛡️ Risk: [Selector stability assessment - may break again if site updates]
+════════════════════════════════════════════════════════
+```
+
+### Path Constants
+
+```
+Skills:      C:\MainAgent\skills\
+Screenshots: C:\MainAgent\screenshots\
+Logs:        C:\MainAgent\logs\
+Memory:      C:\MainAgent\memory\
+```
+
+### Selector Update Workflow with BRIDGE_SIGNAL
+
+```
+1. BRIDGE_SIGNAL:SELF_CORRECTION_STARTED
+   {"site": "[domain]", "element": "[description]", "error": "[message]"}
+
+2. Analyze DOM snapshot
+
+3. BRIDGE_SIGNAL:ALTERNATIVE_FOUND
+   {"old": "[selector]", "new": "[selector]", "confidence": [X]}
+
+4. Test the new selector
+
+5. BRIDGE_SIGNAL:FIX_APPLIED
+   {"file": "[path]", "line": [N], "status": "permanent|temporary"}
+
+6. Save to KnowledgeBase
+
+7. Output Executive Summary
+```

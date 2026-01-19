@@ -109,13 +109,19 @@ Four autonomous skills are available in the `skills/` directory, using SKILL.md 
 
 ### 1. web-operator - Stealth Browser Automation
 
-**Triggers:** "browse website", "open TradingView", "check crypto prices", "take screenshot"
+**Triggers:** "browse website", "open Binance", "check crypto prices", "take screenshot"
 
 **Features:**
-- Headed mode (visible browser) for monitoring
+- Headed mode (visible browser) for user monitoring
 - Anti-detection: realistic timing, proper viewport
-- Site-specific selectors for TradingView, CoinGecko, Binance
-- Cookie/popup handling
+- Site-specific selectors for Binance Demo, CoinGecko
+- Popup/notification auto-dismissal
+- TradingView charts accessed via Binance Demo (built-in)
+
+**Platform Rules:**
+- Trading: Use `https://demo.binance.com/en/*` ONLY
+- TradingView.com is FORBIDDEN for trading analysis
+- Real Binance (www.binance.com) is FORBIDDEN
 
 ### 2. self-correction - DOM Failure Analysis
 
@@ -139,27 +145,59 @@ Four autonomous skills are available in the `skills/` directory, using SKILL.md 
 
 ### 4. market-intelligence - Trading Analysis Framework
 
-**Triggers:** "market analysis", "trade thesis", "chart analysis", "price check"
+**Triggers:** "market analysis", "trade thesis", "chart analysis", "SMC analysis", "price check"
+
+**Platform:** Binance Demo ONLY (`https://demo.binance.com/en/*`)
 
 **Features:**
-- TradingView and CoinGecko data source configurations
-- Trade Thesis structure template
-- Visual chart analysis guidelines
-- KnowledgeBase logging for learning
-- Risk assessment framework
+- Smart Money Concepts (SMC) analysis framework
+- Risk-Adjusted Signal Protocol (RASP) with leverage calculation
+- Visual browser automation (user sees all actions live)
+- Mandatory indicator setup (EMA 200, RSI, Volume Profile)
+- Popup/notification auto-dismissal
+- KnowledgeBase persistence for future automated execution
 
-**Trade Thesis Output:**
+**Leverage Formula:**
 ```
-TRADE_THESIS:
-==================================================
-Asset: ETH/BTC
-1. CURRENT STATE - Price, Volume, Market Cap
-2. TREND ANALYSIS - Direction, Strength, Evidence
-3. KEY LEVELS - Support, Resistance, Pivot
-4. VOLUME ANALYSIS - Confirmation/Divergence
-5. RISK ASSESSMENT - Bull/Bear scenarios
-6. CONFIDENCE LEVEL - High/Medium/Low
-==================================================
+Leverage = Max Risk (1-2%) / Distance to Stop Loss (%)
+Cap: 20x maximum
+Position Size = Portfolio × Risk% × Leverage
+```
+
+**SIGNAL Output (conditions met):**
+```
+🚀 **SIGNAL: SOL/USDT**
+
+📶 **Direction:** LONG
+🎯 **Entry:** $198.50
+🛑 **Stop Loss:** $195.00 (1.76%)
+🏆 **Targets:**
+   • TP1: $205.00 (1:1.86 R:R)
+   • TP2: $212.00 (1:3.86 R:R)
+
+💰 **Risk Management:**
+   • Leverage: 1x
+   • Risk: 2%
+   • Position: $20 (of $1000 portfolio)
+   • R:R Ratio: 1:3.86
+
+💡 **Rationale:** Bullish BOS on 4H with liquidity sweep at $195
+
+📊 Source: Binance Demo
+🔗 Confluence: 4/5
+```
+
+**WAIT Output (conditions NOT met):**
+```
+⏸️ **WAIT: SOL/USDT**
+
+📊 Current Price: $198.50
+🔍 Reason: Awaiting liquidity sweep before entry
+
+📋 Watching For:
+   • Price to sweep $195 lows
+
+Next check: 4H candle close
 ```
 
 ## Components
@@ -305,12 +343,14 @@ npm run start:bridge
 
 ### Trading Analysis (TradingExpert Persona)
 ```
-"Analyze ETH/BTC ratio on TradingView"
+"Analyze SOL/USDT" or "SMC analysis on BTC"
 ```
 - Routes to TradingExpert persona
 - Uses market-intelligence skill (priority)
-- Creates Trade Thesis with support/resistance levels
-- Saves analysis to trading-scoped memory
+- Opens Binance Demo with visual browser (user watches live)
+- Dismisses popups, sets up indicators (EMA 200, RSI)
+- Outputs SIGNAL or WAIT format with leverage calculation
+- Saves signal data to KnowledgeBase for future automation
 
 ### Development Task (Dev Persona)
 ```
