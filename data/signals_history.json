@@ -1,0 +1,39 @@
+{
+  "signals": [
+    {
+      "id": "SIG_1769039492159_BTCUSDT",
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "timestamp": "2026-01-21T23:51:32.159Z",
+      "status": "Hit_SL",
+      "entry_price": 105000,
+      "sl_price": 103000,
+      "tp1_price": 108000,
+      "tp2_price": null,
+      "tp3_price": null,
+      "confluence_score": null,
+      "confidence": "NORMAL",
+      "trigger_reason": "Manual entry",
+      "last_checked": "2026-01-21T23:52:32.284Z",
+      "history": [
+        {
+          "timestamp": "2026-01-21T23:51:32.160Z",
+          "event": "SIGNAL_CREATED",
+          "price": 105000
+        },
+        {
+          "timestamp": "2026-01-21T23:52:32.284Z",
+          "event": "STATUS_CHANGE: Active -> Hit_SL",
+          "price": 89411.93
+        }
+      ]
+    }
+  ],
+  "lastUpdated": "2026-01-21T23:52:32.285Z",
+  "stats": {
+    "total": 1,
+    "wins": 0,
+    "losses": 1,
+    "active": 0
+  }
+}

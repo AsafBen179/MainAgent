@@ -1,7 +1,7 @@
 ---
 name: market-intelligence
-description: This skill should be used when the user asks for "market analysis", "price check", "trade thesis", "chart analysis", "crypto analysis", "technical analysis", "SMC analysis", "order blocks", "fair value gap", "liquidity", "break of structure", or any trading-related research requiring Smart Money Concepts analysis.
-version: 3.0.0
+description: ORCHESTRATOR - 6-Pillar Confluence Trading System. Coordinates SMC Core (Layer 1), Indicator Logic (Layer 2), Risk Management (Layer 3), Social Sentiment (Layer 4), On-Chain Intel (Layer 5), and Fundamental Intel (Layer 6) for high-probability trade signals. Use for "market analysis", "price check", "trade thesis", "chart analysis", "crypto analysis", "technical analysis", "SMC analysis", or any trading-related research.
+version: 7.0.0
 allowed-tools:
   - mcp__playwright__browser_navigate
   - mcp__playwright__browser_snapshot
@@ -10,13 +10,378 @@ allowed-tools:
   - mcp__playwright__browser_wait
   - mcp__playwright__browser_hover
   - mcp__playwright__browser_type
+  - mcp__playwright__browser_press
+  - mcp__playwright__browser_scroll
   - Read
   - Write
+orchestrates:
+  - smc-core
+  - indicator-logic
+  - risk-management
+  - social-sentiment
+  - on-chain-intel
+  - fundamental-intel
 ---
 
-# Market Intelligence Skill - Smart Money Concepts (SMC) Analysis Framework
+# Market Intelligence Skill - ORCHESTRATOR
 
-You are an institutional-grade Market Intelligence analyst specializing in Smart Money Concepts (SMC). Your primary method is identifying where institutional traders (banks, hedge funds) are likely to place orders, then finding high-probability entries at those levels.
+```
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║           MARKET INTELLIGENCE ORCHESTRATOR                                    ║
+║           6-Pillar Confluence Trading System                                  ║
+║                                                                               ║
+║  This skill orchestrates 6 specialized analysis layers:                       ║
+║                                                                               ║
+║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
+║  │  LAYER 1: SMC CORE (smc-core)                                           │  ║
+║  │  → Market Structure: BOS, CHoCH, Order Blocks, FVGs, Liquidity         │  ║
+║  │  → HTF/LTF Alignment Protocol                                          │  ║
+║  │  → Output: SMC_LAYER1_OUTPUT                                           │  ║
+║  └─────────────────────────────────────────────────────────────────────────┘  ║
+║                              ↓                                                ║
+║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
+║  │  LAYER 2: INDICATOR LOGIC (indicator-logic)                             │  ║
+║  │  → Fibonacci OTE (0.618-0.786 zone)                                    │  ║
+║  │  → RSI Divergence Analysis                                              │  ║
+║  │  → Volume Profile (POC, HVN alignment)                                  │  ║
+║  │  → Output: INDICATOR_LAYER2_OUTPUT                                     │  ║
+║  └─────────────────────────────────────────────────────────────────────────┘  ║
+║                              ↓                                                ║
+║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
+║  │  LAYER 3: RISK MANAGEMENT (risk-management)                             │  ║
+║  │  → Leverage Calculation (Risk% / SL_Distance%)                         │  ║
+║  │  → Position Sizing ($1,000 portfolio)                                   │  ║
+║  │  → Take Profit Targets (1:2, 1:3, 1:5 R:R)                             │  ║
+║  │  → Output: RISK_LAYER3_OUTPUT                                          │  ║
+║  └─────────────────────────────────────────────────────────────────────────┘  ║
+║                              ↓                                                ║
+║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
+║  │  LAYER 4: SOCIAL SENTIMENT (social-sentiment)                           │  ║
+║  │  → Live X (Twitter) sentiment scraping                                  │  ║
+║  │  → Influencer/Whale signal detection                                   │  ║
+║  │  → Hype volume and contrarian analysis                                 │  ║
+║  │  → Session: sessions/x_auth.json required                              │  ║
+║  │  → Output: SENTIMENT_LAYER4_OUTPUT                                     │  ║
+║  └─────────────────────────────────────────────────────────────────────────┘  ║
+║                              ↓                                                ║
+║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
+║  │  LAYER 5: ON-CHAIN INTEL (on-chain-intel)                               │  ║
+║  │  → Whale transaction tracking (Arkham/Solscan/Etherscan)               │  ║
+║  │  → Smart Money flow detection (accumulation/distribution)              │  ║
+║  │  → Exchange inflow/outflow analysis                                    │  ║
+║  │  → High-Conviction Rule: Whale-confirmed setups                        │  ║
+║  │  → Output: ONCHAIN_LAYER5_OUTPUT                                       │  ║
+║  └─────────────────────────────────────────────────────────────────────────┘  ║
+║                              ↓                                                ║
+║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
+║  │  LAYER 6: FUNDAMENTAL INTEL (fundamental-intel)         ★ NEW ★         │  ║
+║  │  → RSS/News feed monitoring for breaking announcements                 │  ║
+║  │  → Partnership, listing, and upgrade detection                         │  ║
+║  │  → Negative news veto (hacks, delistings, regulatory action)           │  ║
+║  │  → Catalyst timeline tracking (scheduled events)                       │  ║
+║  │  → Output: FUNDAMENTAL_LAYER6_OUTPUT                                   │  ║
+║  └─────────────────────────────────────────────────────────────────────────┘  ║
+║                              ↓                                                ║
+║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
+║  │  ORCHESTRATOR CONFLUENCE CHECK                                          │  ║
+║  │  → All 6 pillars evaluated for confluence                              │  ║
+║  │  → Contrarian Rule: Flag extreme sentiment/whale divergence            │  ║
+║  │  → High-Conviction Rule: Whale-confirmed = EXTREME confidence          │  ║
+║  │  → News Veto Rule: Negative fundamentals = ABORT signal                │  ║
+║  │  → Output: SIGNAL or WAIT (WhatsApp + Social + Whale + Fundamentals)   │  ║
+║  └─────────────────────────────────────────────────────────────────────────┘  ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## ORCHESTRATION WORKFLOW
+
+```
+6-PILLAR_ORCHESTRATION:
+═══════════════════════════════════════════════════════════════
+
+STEP 1: INVOKE LAYER 1 (SMC Core)
+─────────────────────────────────────
+→ Analyze market structure on 4H and 1H
+→ Identify BOS, CHoCH, Order Blocks, FVGs
+→ Check HTF/LTF alignment
+→ Identify POI zone and liquidity
+→ Receive: SMC_LAYER1_OUTPUT
+
+CHECK: If layer1_verdict == "NO_CLEAR_STRUCTURE"
+  → ABORT and output WAIT immediately
+
+STEP 2: INVOKE LAYER 2 (Indicator Logic)
+─────────────────────────────────────────
+→ Calculate Fibonacci OTE zone from swing points
+→ Check if entry is in OTE (0.618-0.786)
+→ Analyze RSI for divergence on 15m
+→ Check Volume Profile POC alignment
+→ Receive: INDICATOR_LAYER2_OUTPUT
+
+CHECK: Count confirmations (2/3 minimum required)
+
+STEP 3: INVOKE LAYER 3 (Risk Management)
+─────────────────────────────────────────
+→ Calculate entry, stop loss, take profit levels
+→ Calculate leverage: Risk% / SL_Distance%
+→ Calculate position size for $1,000 portfolio
+→ Validate R:R ratio (minimum 1:2)
+→ Receive: RISK_LAYER3_OUTPUT
+
+CHECK: If layer3_verdict == "REJECTED"
+  → ABORT and output WAIT with reason
+
+STEP 4: INVOKE LAYER 4 (Social Sentiment)
+──────────────────────────────────────────
+→ Check if sessions/x_auth.json exists
+→ If missing: Skip Layer 4, output warning
+→ If exists: Navigate to X with asset search
+→ Scrape latest 15-20 posts
+→ Calculate sentiment score (1-10)
+→ Detect influencer/whale signals
+→ Check hype volume
+→ Apply Contrarian Rule
+→ Receive: SENTIMENT_LAYER4_OUTPUT
+
+CHECK: If layer4_verdict == "CONTRARIAN_WARNING"
+  → Flag in output, reduce position to 50%
+
+STEP 5: INVOKE LAYER 5 (On-Chain Intel) ★ NEW ★
+────────────────────────────────────────────────
+→ Identify asset type (SOL/ETH/BTC)
+→ Navigate to appropriate platform:
+    - SOL: Solscan (https://solscan.io/)
+    - ETH: Etherscan/Arkham
+    - BTC: Arkham Intelligence
+→ Check whale transactions (last 24H)
+→ Analyze exchange inflows/outflows
+→ Track smart money wallet activity
+→ Calculate on-chain score (1-10)
+→ Apply High-Conviction Rule
+→ Receive: ONCHAIN_LAYER5_OUTPUT
+
+CHECK: If layer5_verdict == "WHALE_DIVERGENCE"
+  → Flag in output, reduce position to 50%
+
+CHECK: If layer5_verdict == "WHALE_CONFIRMED"
+  → Set confidence to EXTREME
+  → Allow position size +25%
+
+STEP 6: INVOKE LAYER 6 (Fundamental Intel) ★ NEW ★
+────────────────────────────────────────────────────
+→ Check RSS feeds for recent news (last 24H)
+→ Scan for positive catalysts:
+    - Exchange listings
+    - Partnerships/integrations
+    - Protocol upgrades
+    - Ecosystem events
+→ Scan for negative news (VETO triggers):
+    - Hacks/exploits
+    - Delistings
+    - Regulatory actions
+    - Team departures
+→ Calculate fundamental score (1-10)
+→ Receive: FUNDAMENTAL_LAYER6_OUTPUT
+
+CHECK: If layer6_verdict == "NEWS_VETO"
+  → ABORT and output WAIT immediately
+  → Reason: "Negative fundamental event detected"
+
+CHECK: If layer6_verdict == "CATALYST_DETECTED"
+  → Add +1 confidence modifier
+  → Flag: "Upcoming catalyst detected"
+
+STEP 7: FINAL CONFLUENCE CHECK
+───────────────────────────────
+→ Count total confirmations from all 6 layers
+→ Apply 6-pillar confluence matrix
+→ Check for contrarian/divergence signals
+→ Apply High-Conviction Rule if whale-confirmed
+→ Apply News Veto Rule if negative fundamentals
+→ Determine SIGNAL or WAIT
+→ Include Social Pulse + Whale Activity + Fundamentals in output
+
+═══════════════════════════════════════════════════════════════
+```
+
+### CONFLUENCE MATRIX
+
+```
+6-PILLAR_CONFLUENCE_SCORING:
+═══════════════════════════════════════════════════════════════
+
+LAYER 1 - SMC CORE CONFIRMATIONS:
+┌─────────────────────────────────────────────────────────────┐
+│ ☐ HTF (4H) Trend Clear (BOS confirmed)              +1     │
+│ ☐ LTF (1H) Aligned with HTF                         +1     │
+│ ☐ Unmitigated POI Identified (OB or FVG)            +1     │
+│ ☐ Liquidity Sweep Confirmed                         +1     │
+└─────────────────────────────────────────────────────────────┘
+Layer 1 Max: 4 points
+
+LAYER 2 - INDICATOR CONFIRMATIONS:
+┌─────────────────────────────────────────────────────────────┐
+│ ☐ Fibonacci OTE Zone (entry in 0.618-0.786)         +1     │
+│ ☐ RSI Divergence or Extreme Reading                 +1     │
+│ ☐ Volume Profile POC/HVN Alignment                  +1     │
+└─────────────────────────────────────────────────────────────┘
+Layer 2 Max: 3 points
+
+LAYER 3 - RISK VALIDATION:
+┌─────────────────────────────────────────────────────────────┐
+│ ☐ R:R Ratio ≥ 1:2                                   +1     │
+│ ☐ Leverage ≤ 20x (valid calculation)                +1     │
+└─────────────────────────────────────────────────────────────┘
+Layer 3 Max: 2 points
+
+LAYER 4 - SOCIAL SENTIMENT:
+┌─────────────────────────────────────────────────────────────┐
+│ ☐ Sentiment aligned with technical bias             +1     │
+│ ☐ No contrarian warning (not extreme)               +1     │
+└─────────────────────────────────────────────────────────────┘
+Layer 4 Max: 2 points
+
+LAYER 5 - ON-CHAIN INTEL:
+┌─────────────────────────────────────────────────────────────┐
+│ ☐ On-chain flow aligned with technical bias         +1     │
+│   (Accumulation for LONG, Distribution for SHORT)          │
+│ ☐ No whale divergence warning                       +1     │
+│   (Whales not selling into bullish setup, etc.)           │
+└─────────────────────────────────────────────────────────────┘
+Layer 5 Max: 2 points
+
+LAYER 6 - FUNDAMENTAL INTEL (NEW):
+┌─────────────────────────────────────────────────────────────┐
+│ ☐ No negative news veto (no hacks/delistings)       +1     │
+│   (If negative news detected → IMMEDIATE ABORT)            │
+│ ☐ Positive catalyst detected OR neutral stance      +1     │
+│   (Listings, partnerships, upgrades = +1)                  │
+└─────────────────────────────────────────────────────────────┘
+Layer 6 Max: 2 points
+
+TOTAL POSSIBLE: 15 points
+
+CONFIDENCE CALCULATION:
+─────────────────────────────────────────────────────────────
+  Confidence % = (Points Scored / 15) × 100
+
+  Example: 11 points → (11/15) × 100 = 73%
+  Example: 12 points → (12/15) × 100 = 80%
+
+SIGNAL THRESHOLDS (Updated for 6 Pillars):
+─────────────────────────────────────────────────────────────
+🛡️ MINIMUM REQUIREMENT: Confidence ≥ 75% for ANY signal
+
+13-15 points (87-100%) → 🟢 STRONG SIGNAL (Full position)
+12 points (80%)        → 🟡 MODERATE SIGNAL (75% position)
+11 points (73%)        → 🔴 NO SIGNAL → WAIT + 4H MUTE
+< 11 points (<73%)     → 🔴 NO SIGNAL → WAIT + 4H MUTE
+
+⚠️  CRITICAL: If Confidence < 75%:
+    → Result = WAIT (not SIGNAL)
+    → Asset is MUTED for 4 hours
+    → NO WhatsApp message sent
+    → Logged: "Asset [Symbol] WAIT. Muted for 4 hours."
+
+HIGH-CONVICTION MODIFIER:
+─────────────────────────────────────────────────────────────
+IF SMC is BULLISH AND On-chain shows HEAVY ACCUMULATION (≥8):
+  → Confidence: +5% bonus
+  → Position: +25% (125% of normal)
+  → Label: "WHALE-CONFIRMED SETUP"
+
+IF SMC is BEARISH AND On-chain shows HEAVY DISTRIBUTION (≤2):
+  → Confidence: +5% bonus
+  → Position: +25% (125% of normal)
+  → Label: "WHALE-CONFIRMED SETUP"
+═══════════════════════════════════════════════════════════════
+```
+
+### CONTRARIAN RULE (Layer 4 & 5 Special Check)
+
+```
+╔═══════════════════════════════════════════════════════════════╗
+║                    CONTRARIAN RULE                            ║
+╠═══════════════════════════════════════════════════════════════╣
+║                                                               ║
+║  LAYER 4 - SOCIAL SENTIMENT CONTRARIAN:                       ║
+║  ─────────────────────────────────────────────────────────────║
+║  IF technicals are BULLISH but Sentiment is EXTREME GREED:    ║
+║  → Flag as HIGH RISK for potential reversal (Liquidity Grab)  ║
+║  → Reduce position size to 50%                                ║
+║  → Add warning to output                                      ║
+║                                                               ║
+║  IF technicals are BEARISH but Sentiment is EXTREME FEAR:     ║
+║  → Flag as HIGH RISK for potential bottom                     ║
+║  → Consider waiting for reversal confirmation                 ║
+║  → Add warning to output                                      ║
+║                                                               ║
+║  Extreme = Sentiment Score ≤ 2 (EXTREME FEAR)                 ║
+║         or Sentiment Score ≥ 9 (EXTREME GREED)                ║
+║                                                               ║
+╠═══════════════════════════════════════════════════════════════╣
+║                                                               ║
+║  LAYER 5 - WHALE DIVERGENCE:                                  ║
+║  ─────────────────────────────────────────────────────────────║
+║  IF technicals are BULLISH but On-chain shows DISTRIBUTION:   ║
+║  → Flag as "WHALE DIVERGENCE WARNING"                         ║
+║  → Whales selling into strength = potential trap              ║
+║  → Reduce position size to 50%                                ║
+║  → Add warning: "Whales selling into bullish setup"           ║
+║                                                               ║
+║  IF technicals are BEARISH but On-chain shows ACCUMULATION:   ║
+║  → Flag as "SMART MONEY DIVERGENCE"                           ║
+║  → Whales buying into weakness = possible bottom              ║
+║  → Consider waiting for reversal confirmation                 ║
+║  → Add warning: "Whales buying into weakness"                 ║
+║                                                               ║
+║  Distribution = On-chain Score ≤ 3                            ║
+║  Accumulation = On-chain Score ≥ 7                            ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+```
+
+### MANDATORY LAYER REQUIREMENTS
+
+```
+HARD REQUIREMENTS (Must ALL pass for any signal):
+─────────────────────────────────────────────────────────────
+☐ Layer 1: HTF trend must be clear (not ranging)
+☐ Layer 1: LTF must be aligned (not conflicting)
+☐ Layer 2: Minimum 2/3 indicator confirmations
+☐ Layer 3: R:R ratio must be ≥ 1:2
+☐ Layer 4: If session exists, must complete analysis
+☐ Layer 5: On-chain analysis attempted (if platform available)
+☐ Layer 6: No news veto detected (negative events = ABORT)
+
+SOFT REQUIREMENTS (Adjust position if fails):
+─────────────────────────────────────────────────────────────
+☐ Layer 4: If contrarian warning → Reduce to 50% position
+☐ Layer 4: If x_auth.json missing → Skip with warning
+☐ Layer 5: If whale divergence → Reduce to 50% position
+☐ Layer 5: If platform unavailable → Skip with warning
+☐ Layer 6: If no news data → Skip with warning (neutral)
+☐ Layer 6: If catalyst detected → Flag in output (+1 confidence)
+
+POSITION MODIFIERS:
+─────────────────────────────────────────────────────────────
+☐ Whale-confirmed setup → +25% position (125% of normal)
+☐ Contrarian warning → -50% position (50% of normal)
+☐ Whale divergence → -50% position (50% of normal)
+☐ Positive catalyst → +10% confidence boost
+
+NEWS VETO RULE (Layer 6 Special):
+─────────────────────────────────────────────────────────────
+☐ If NEWS_VETO detected → IMMEDIATE ABORT (no signal)
+☐ Veto triggers: Hacks, exploits, delistings, regulatory action
+☐ Override: Only user can override a news veto manually
+
+If ANY hard requirement fails → WAIT (no signal generated)
+```
 
 ---
 
@@ -34,19 +399,18 @@ You are an institutional-grade Market Intelligence analyst specializing in Smart
 
 ### STEP-BY-STEP MANDATORY WORKFLOW:
 
-**STEP 1: Navigate to Binance Demo**
+**STEP 1: Navigate to TradingView**
 ```
-mcp__playwright__browser_navigate({ url: "https://demo.binance.com/en/trade/SOL_USDT?type=spot" })
+mcp__playwright__browser_navigate({ url: "https://www.tradingview.com/chart/" })
 mcp__playwright__browser_wait({ time: 4000 })
 ```
 
 **STEP 2: DISMISS ALL POPUPS (DO THIS BEFORE ANYTHING ELSE)**
 ```
-// Dismiss notification popup - try each selector
-mcp__playwright__browser_click({ selector: "button:has-text('Not Now')" })
-mcp__playwright__browser_click({ selector: "button:has-text('Block')" })
-mcp__playwright__browser_click({ selector: "button:has-text('No')" })
-mcp__playwright__browser_click({ selector: "button:has-text('Later')" })
+// Dismiss cookie consent, ads, or notification popups
+mcp__playwright__browser_click({ selector: "button:has-text('Accept')" })
+mcp__playwright__browser_click({ selector: "button:has-text('Got it')" })
+mcp__playwright__browser_click({ selector: "button:has-text('Maybe Later')" })
 mcp__playwright__browser_click({ selector: "[class*='close']" })
 mcp__playwright__browser_click({ selector: "[aria-label='Close']" })
 
@@ -55,47 +419,83 @@ mcp__playwright__browser_press({ key: "Escape" })
 mcp__playwright__browser_wait({ time: 1000 })
 ```
 
-**STEP 3: SWITCH TO TRADINGVIEW CHART**
+**STEP 3: SEARCH FOR SYMBOL (Use '/' or 'Enter' key)**
 ```
-// Click on TradingView tab (it's in the chart area)
-mcp__playwright__browser_click({ selector: "[class*='tradingview']" })
-// OR
-mcp__playwright__browser_click({ selector: "div[class*='chart-type'] button:nth-child(2)" })
+// Method 1: Press '/' to open symbol search
+mcp__playwright__browser_press({ key: "/" })
+mcp__playwright__browser_wait({ time: 500 })
+
+// Type the symbol (e.g., SOLUSDT, BTCUSDT, ETHUSDT)
+mcp__playwright__browser_type({ selector: "input[data-role='search']", text: "SOLUSDT" })
+// Alternative selector:
+mcp__playwright__browser_type({ selector: "[class*='search'] input", text: "SOLUSDT" })
+mcp__playwright__browser_wait({ time: 1000 })
+
+// Press Enter to select first result
+mcp__playwright__browser_press({ key: "Enter" })
 mcp__playwright__browser_wait({ time: 2000 })
 ```
 
-**STEP 4: ADD INDICATORS (CRITICAL - DO NOT SKIP)**
+**STEP 4: SET TIMEFRAME (Use top bar buttons)**
 ```
-// Open indicators panel - the button has an "fx" or indicator icon
+// TradingView timeframe selectors on top bar:
+// 4H timeframe
+mcp__playwright__browser_click({ selector: "[data-value='240']" })
+// OR
+mcp__playwright__browser_click({ selector: "button:has-text('4h')" })
+
+// 1H timeframe
+mcp__playwright__browser_click({ selector: "[data-value='60']" })
+// OR
+mcp__playwright__browser_click({ selector: "button:has-text('1h')" })
+
+// 15m timeframe
+mcp__playwright__browser_click({ selector: "[data-value='15']" })
+
+mcp__playwright__browser_wait({ time: 1500 })
+```
+
+**STEP 5: VERIFY INDICATORS (TV Free Tier - MAX 2 INDICATORS)**
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║  REQUIRED INDICATORS (already saved in TV layout):                ║
+║                                                                   ║
+║  1. Smart Money Concepts [LuxAlgo]                                ║
+║  2. Liquidity Sweeps                                              ║
+║                                                                   ║
+║  If indicators NOT visible, add them:                             ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+// Open indicators panel
 mcp__playwright__browser_click({ selector: "[data-name='open-indicators-dialog']" })
-// Alternative selectors:
+// Alternative:
 mcp__playwright__browser_click({ selector: "button[aria-label*='Indicator']" })
-mcp__playwright__browser_click({ selector: "[class*='button'][class*='indicator']" })
 mcp__playwright__browser_wait({ time: 1000 })
 
-// Search and add each indicator:
-// 1. Type indicator name in search
-mcp__playwright__browser_type({ selector: "input[placeholder*='Search']", text: "EMA" })
+// Search for LuxAlgo SMC
+mcp__playwright__browser_type({ selector: "input[placeholder*='Search']", text: "Smart Money Concepts LuxAlgo" })
 mcp__playwright__browser_wait({ time: 500 })
-// 2. Click first result
 mcp__playwright__browser_click({ selector: "[class*='indicator-item']:first-child" })
-// 3. Configure EMA to 200 period
-// 4. Repeat for RSI, Volume Profile
 
-// After adding indicators, close the panel
+// Search for Liquidity Sweeps
+mcp__playwright__browser_type({ selector: "input[placeholder*='Search']", text: "Liquidity Sweeps" })
+mcp__playwright__browser_wait({ time: 500 })
+mcp__playwright__browser_click({ selector: "[class*='indicator-item']:first-child" })
+
+// Close indicator panel
 mcp__playwright__browser_press({ key: "Escape" })
 ```
 
-**STEP 5: TAKE SCREENSHOT WITH INDICATORS VISIBLE**
+**STEP 6: TAKE SCREENSHOT WITH INDICATORS VISIBLE**
 ```
 mcp__playwright__browser_take_screenshot()
 ```
 
-**STEP 6: ANALYZE AND OUTPUT IN SIGNAL/WAIT FORMAT**
+**STEP 7: ANALYZE AND OUTPUT IN SIGNAL/WAIT FORMAT**
 
 ### ⚠️ OUTPUT FORMAT - USE THIS EXACTLY ⚠️
 
-**IF conditions are met (HTF+LTF aligned, liquidity swept, confluence ≥4/5):**
+**IF conditions are met (6-Pillar Confluence ≥7 points):**
 ```
 🚀 **SIGNAL: [ASSET]**
 
@@ -103,9 +503,9 @@ mcp__playwright__browser_take_screenshot()
 🎯 **Entry:** $[Price]
 🛑 **Stop Loss:** $[Price] ([X%] from entry)
 🏆 **Targets:**
-   • TP1: $[Price] (1:[X] R:R)
-   • TP2: $[Price] (1:[X] R:R)
-   • TP3: $[Price] (1:[X] R:R)
+   • TP1: $[Price] (1:2 R:R) - Close 50%
+   • TP2: $[Price] (1:3 R:R) - Close 30%
+   • TP3: $[Price] (1:5 R:R) - Close 20%
 
 💰 **Risk Management:**
    • Leverage: [X]x (calculated: 2% / [SL distance]%)
@@ -113,27 +513,70 @@ mcp__playwright__browser_take_screenshot()
    • Position: $[X] (of $1000 portfolio)
    • R:R Ratio: 1:[X]
 
-💡 **Rationale:** [1-sentence SMC explanation]
+📊 **Confluence Rationale:**
+   Layer 1 (SMC): [✅/❌] [Brief SMC finding - BOS direction, POI type]
+   Layer 2 (Technical): [✅/❌] [Brief indicator finding - OTE/RSI/Volume]
+   Layer 3 (Risk): [✅/❌] [Brief risk finding - R:R and leverage]
+   Layer 4 (Sentiment): [✅/❌] [Brief sentiment - aligned/contrarian]
+   Layer 5 (On-Chain): [✅/❌] [Brief on-chain - accumulation/distribution]
+   Layer 6 (Fundamental): [✅/❌] [Brief fundamental - catalyst/neutral/veto]
+
+🌐 **Social Pulse:** [Score]/10 - [Key insight from X]
+   [If contrarian warning: ⚠️ CONTRARIAN: Extreme sentiment detected]
+
+🐋 **Whale Activity:** [Score]/10 - [Summary: e.g., "3 Top Wallets accumulated $2M in last 1H"]
+   [If whale-confirmed: ⭐ WHALE CONFIRMED: High-conviction setup]
+   [If whale divergence: ⚠️ WHALE DIVERGENCE: Whales [selling/buying] against trend]
+
+📰 **Fundamentals:** [Score]/10 - [Summary: e.g., "Exchange listing announced" or "No significant news"]
+   [If catalyst: 🚀 CATALYST: [Event description]]
+   [If veto: ⛔ NEWS VETO: [Negative event - signal aborted]]
 
 ⏰ **Valid Until:** [Invalidation condition]
 
 ───────────────────────────
-📊 Source: Binance Demo
-🔗 Confluence: [X]/5
+📊 Source: TradingView + X + On-Chain
+🔗 Confluence Score: [X]/15 points
+🛡️ Confidence: [X]% (threshold: 75%)
+🎯 Signal Strength: [STRONG/MODERATE/WEAK]
+[If whale-confirmed: 🏆 CONFIDENCE: EXTREME (+5%)]
 ```
 
-**IF conditions are NOT met:**
+**IF conditions are NOT met (Confidence < 75% OR recommendation is WAIT):**
+
+⚠️ **IMPORTANT: DO NOT SEND WAIT MESSAGES TO WHATSAPP**
+   → Asset is automatically MUTED for 4 hours
+   → Log to KnowledgeBase only
+   → Next analysis allowed after mute expires
+
 ```
-⏸️ **WAIT: [ASSET]**
+[INTERNAL LOG ONLY - NOT SENT TO WHATSAPP]
+
+⏸️ **WAIT: [ASSET]** 🔇 MUTED 4H
 
 📊 Current Price: $[Price]
+🛡️ Confidence: [X]% (threshold: 75%)
 🔍 Reason: [Single sentence - why no signal]
 
-📋 Watching For:
-   • [Specific condition needed for signal]
+📋 Layer Status:
+   Layer 1 (SMC): [✅/❌] [Status]
+   Layer 2 (Technical): [✅/❌] [Status]
+   Layer 3 (Risk): [✅/❌] [Status]
+   Layer 4 (Sentiment): [✅/❌/⚠️] [Status or "Session missing"]
+   Layer 5 (On-Chain): [✅/❌/⚠️] [Status or "Platform unavailable"]
+   Layer 6 (Fundamental): [✅/❌/⚠️] [Status or "No data"]
+
+🌐 **Social Pulse:** [Score]/10 - [Key insight or "N/A"]
+
+🐋 **Whale Activity:** [Score]/10 - [Summary or "N/A"]
+
+📰 **Fundamentals:** [Score]/10 - [Summary or "N/A"]
 
 ───────────────────────────
-Next check: [Timeframe or condition]
+Confluence Score: [X]/15 points
+🛡️ Confidence: [X]% (need ≥75%)
+🔇 Asset muted until: [mute_until timestamp]
+Next analysis: After 4-hour cooldown expires
 ```
 
 ### ⛔ DO NOT USE EXECUTIVE SUMMARY FORMAT ⛔
@@ -149,35 +592,62 @@ Always use 🚀 SIGNAL or ⏸️ WAIT format above.
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   ALL TRADING ANALYSIS MUST USE BINANCE DEMO - NO EXCEPTIONS                  ║
+║   ALL TRADING ANALYSIS MUST USE TRADINGVIEW - NO EXCEPTIONS                   ║
 ║                                                                               ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                               ║
-║   ✅ ONLY URL ALLOWED: https://demo.binance.com/en/*                          ║
+║   ✅ PRIMARY URL: https://www.tradingview.com/chart/                          ║
 ║                                                                               ║
-║   ⛔ FORBIDDEN URLs (DO NOT USE):                                             ║
-║      - https://www.tradingview.com/*     ← NEVER USE                          ║
-║      - https://tradingview.com/*         ← NEVER USE                          ║
-║      - https://www.binance.com/*         ← NEVER USE (REAL MONEY)             ║
-║      - https://binance.com/*             ← NEVER USE (REAL MONEY)             ║
+║   📁 SESSION AUTH: Use sessions/tv_auth.json for logged-in state              ║
 ║                                                                               ║
-║   If user says "use TradingView" → Use Binance Demo instead                   ║
-║   If user says "open chart" → Use Binance Demo                                ║
-║   If user says "analyze X" → Use Binance Demo                                 ║
+║   📊 INDICATORS (TV Free Tier - MAX 2):                                       ║
+║      1. Smart Money Concepts [LuxAlgo]                                        ║
+║      2. Liquidity Sweeps                                                      ║
 ║                                                                               ║
-║   Binance Demo has TradingView charts BUILT-IN. No need for tradingview.com   ║
+║   ⛔ FORBIDDEN:                                                               ║
+║      - www.binance.com (REAL MONEY)                                           ║
+║      - demo.binance.com (use TradingView instead)                             ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
+```
+
+**SESSION HANDLING:**
+```
+TradingView Session (Required for chart analysis):
+  File: sessions/tv_auth.json
+  Maintains: Logged-in state with saved chart layouts
+  Env: PLAYWRIGHT_MCP_STORAGE_STATE=sessions/tv_auth.json
+
+X (Twitter) Session (Required for Layer 4 sentiment):
+  File: sessions/x_auth.json
+  Maintains: Logged-in X session for live scraping
+  Capture: npm run capture-x-auth (if missing)
+```
+
+**X SESSION CHECK (Layer 4 Prerequisite):**
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║  BEFORE Layer 4 (Social Sentiment) analysis:                      ║
+║                                                                   ║
+║  1. Check if sessions/x_auth.json exists                          ║
+║  2. If MISSING:                                                   ║
+║     → Output warning: "⚠️ X session missing. Run: npm run         ║
+║       capture-x-auth to enable sentiment analysis."               ║
+║     → Skip Layer 4, proceed with Layers 1-3 only                  ║
+║     → Note in output: "Social Pulse: N/A (session missing)"       ║
+║  3. If EXISTS:                                                    ║
+║     → Proceed with full Layer 4 analysis                          ║
+║     → Navigate to X search for asset                              ║
+║     → Scrape and analyze sentiment                                ║
+╚═══════════════════════════════════════════════════════════════════╝
 ```
 
 **URL VALIDATION (REQUIRED BEFORE EVERY ACTION):**
 ```
 BEFORE clicking, typing, or interacting:
 1. Check current URL
-2. If URL contains "demo.binance.com" → PROCEED
-3. If URL contains "tradingview.com" → ABORT and navigate to Binance Demo
-4. If URL contains "www.binance.com" → ABORT (real money site)
-5. If URL contains "binance.com" (without demo) → ABORT (real money site)
+2. If URL contains "tradingview.com" → PROCEED
+3. If URL contains "binance.com" → ABORT (wrong platform)
 ```
 
 ---
@@ -659,7 +1129,7 @@ If ANY core indicator (1-4) fails to load → RETRY or REPORT
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
-║              GOLD STANDARD CHECKLIST (5 PILLARS)                  ║
+║              GOLD STANDARD CHECKLIST (6 PILLARS)                  ║
 ║                                                                   ║
 ║   ALL FIVE must be ✅ for maximum probability trade               ║
 ║   Minimum 4/5 required to approve thesis                          ║
@@ -708,7 +1178,7 @@ If ANY core indicator (1-4) fails to load → RETRY or REPORT
 ### Indicator Consensus Rating
 
 ```
-INDICATOR_CONSENSUS (Binance 5-Pillar):
+INDICATOR_CONSENSUS (Binance 6-Pillar):
 ════════════════════════════════════════════════════════
 Pillar              │ Status      │ Indicator Source
 ════════════════════════════════════════════════════════
@@ -1643,58 +2113,136 @@ BRIDGE_SIGNAL:SIGNAL_SAVE
 Next check: [Timeframe or condition]
 ```
 
-### 5. Complete Signal Workflow
+### 5. Complete Signal Workflow (6-Pillar)
 
 ```
-SIGNAL_WORKFLOW:
+5_PILLAR_SIGNAL_WORKFLOW:
 ═══════════════════════════════════════════════════════════════
 
-STEP 1: ANALYSIS
-  └─ Complete SMC analysis on 4H + 1H
-  └─ Identify POI, liquidity, structure
+STEP 1: LAYER 1 - SMC CORE ANALYSIS
+  └─ Navigate to TradingView, set 4H timeframe
+  └─ Analyze market structure (BOS, CHoCH)
+  └─ Identify POI (Order Block or FVG)
+  └─ Check HTF/LTF alignment
+  └─ Detect liquidity sweeps
+  └─ Score: [X]/4 points
 
-STEP 2: DECISION
-  └─ Run Decision Tree
-  └─ Determine SIGNAL or WAIT
+STEP 2: LAYER 2 - INDICATOR VALIDATION
+  └─ Calculate Fibonacci OTE zone (0.618-0.786)
+  └─ Analyze RSI on 15m for divergence
+  └─ Check Volume Profile POC alignment
+  └─ Verify 2/3 minimum confirmations
+  └─ Score: [X]/3 points
 
-STEP 3: CALCULATE (if SIGNAL)
-  └─ Entry price
-  └─ Stop Loss price
-  └─ Take Profit levels (TP1, TP2, TP3)
-  └─ Distance to SL (%)
-  └─ Leverage = Risk% / SL_Distance%
+STEP 3: LAYER 3 - RISK CALCULATION
+  └─ Define Entry, SL, TP levels
+  └─ Calculate SL distance %
+  └─ Calculate Leverage: 2% / SL_Distance%
   └─ Cap leverage at 20x
-  └─ Position size in USD
-  └─ R:R ratio
+  └─ Calculate position size for $1,000 portfolio
+  └─ Validate R:R ≥ 1:2
+  └─ Score: [X]/2 points
 
-STEP 4: PERSIST (CRITICAL)
+STEP 4: LAYER 4 - SOCIAL SENTIMENT
+  └─ Check X session (x_auth.json)
+  └─ Navigate to X, search asset
+  └─ Scrape 15-20 recent posts
+  └─ Calculate sentiment score (1-10)
+  └─ Apply Contrarian Rule
+  └─ Score: [X]/2 points
+
+STEP 5: LAYER 5 - ON-CHAIN INTEL
+  └─ Navigate to Arkham/Solscan/Etherscan
+  └─ Check whale transactions (last 24H)
+  └─ Analyze exchange flow direction
+  └─ Track smart money movements
+  └─ Calculate on-chain score (1-10)
+  └─ Apply High-Conviction Rule
+  └─ Score: [X]/2 points
+
+STEP 6: CONFLUENCE CHECK
+  └─ Total Score: [X]/15 points
+  └─ If ≥ 6 points → SIGNAL
+  └─ If < 6 points → WAIT
+  └─ If whale-confirmed → EXTREME confidence
+
+STEP 7: PERSIST TO KNOWLEDGEBASE (CRITICAL)
   └─ BRIDGE_SIGNAL:SIGNAL_SAVE
-  └─ Save all parameters to KnowledgeBase
+  └─ Save all layer outputs
+  └─ Save confluence rationale
   └─ Mark execution_ready: true
 
-STEP 5: OUTPUT
-  └─ Format using WhatsApp Signal Format
+STEP 8: OUTPUT
+  └─ Format using SIGNAL or WAIT format
+  └─ Include Confluence Rationale for all 5 layers
+  └─ Include Social Pulse + Whale Activity
   └─ Send to user via WhatsApp
 
 ═══════════════════════════════════════════════════════════════
 ```
 
-### 6. Signal Validation Checklist
+### 6. Signal Validation Checklist (6-Pillar)
 
 ```
-PRE-OUTPUT VALIDATION:
+PRE-OUTPUT VALIDATION (5-PILLAR):
 ═══════════════════════════════════════════════════════════════
-[ ] Entry price extracted from chart (not estimated)
-[ ] Stop Loss defined at structural invalidation
+
+LAYER 1 CHECKS:
+[ ] 4H trend direction identified (BULLISH/BEARISH)
+[ ] 1H alignment verified (ALIGNED/CONFLICTING)
+[ ] POI identified and marked (OB/FVG/OB+FVG)
+[ ] Liquidity sweep detected (if applicable)
+[ ] Layer 1 score calculated: [X]/4
+
+LAYER 2 CHECKS:
+[ ] Swing high/low identified for Fibonacci
+[ ] OTE zone calculated (0.618-0.786 levels)
+[ ] Entry position relative to OTE determined
+[ ] RSI checked on 15m for divergence/extreme
+[ ] Volume Profile POC level identified
+[ ] Layer 2 score calculated: [X]/3 (minimum 2/3)
+
+LAYER 3 CHECKS:
+[ ] Entry price extracted from chart (EXACT)
+[ ] Stop Loss at structural invalidation
 [ ] SL distance calculated: |Entry - SL| / Entry × 100
-[ ] Leverage calculated: Risk% / SL_Distance%
+[ ] Leverage calculated: 2% / SL_Distance%
 [ ] Leverage ≤ 20x (capped if exceeded)
-[ ] Position size calculated: Portfolio × Risk% × Leverage
-[ ] TP1 achieves minimum 1:2 R:R
-[ ] TP2 and TP3 defined at structural targets
-[ ] Confluence score ≥ 4/5
+[ ] Position size: $1,000 × 2% × Leverage
+[ ] TP1 at 1:2 R:R (close 50%)
+[ ] TP2 at 1:3 R:R (close 30%)
+[ ] TP3 at 1:5 R:R (close 20%)
+[ ] R:R ratio ≥ 1:2 verified
+[ ] Layer 3 score calculated: [X]/2
+
+LAYER 4 CHECKS:
+[ ] X session exists (x_auth.json)
+[ ] Navigated to X with asset search
+[ ] 15-20 posts scraped and analyzed
+[ ] Sentiment score calculated (1-10)
+[ ] Contrarian Rule applied
+[ ] Layer 4 score calculated: [X]/2
+
+LAYER 5 CHECKS:
+[ ] Asset type identified (SOL/ETH/BTC)
+[ ] Platform selected (Arkham/Solscan/Etherscan)
+[ ] Whale transactions checked (last 24H)
+[ ] Exchange flow analyzed (inflow/outflow)
+[ ] Smart money activity assessed
+[ ] On-chain score calculated (1-10)
+[ ] High-Conviction Rule checked
+[ ] Whale divergence checked
+[ ] Layer 5 score calculated: [X]/2
+
+FINAL CHECKS:
+[ ] Total confluence score: [X]/15 points
+[ ] Confluence score ≥ 6 (else WAIT)
+[ ] Confluence Rationale written for all 5 layers
+[ ] Social Pulse included
+[ ] Whale Activity included
+[ ] High-Conviction modifier applied (if whale-confirmed)
 [ ] Data saved to KnowledgeBase
-[ ] WhatsApp format applied correctly
+[ ] SIGNAL or WAIT format applied correctly
 ═══════════════════════════════════════════════════════════════
 ```
 
@@ -1745,66 +2293,185 @@ BRIDGE_SIGNAL:LEARNING_SAVE
 
 ### Executive Summary Format (Trading)
 
-**End EVERY market analysis with this EXACT format:**
+**⛔ DEPRECATED: Executive Summary format is replaced by SIGNAL/WAIT format.**
+
+**Use the SIGNAL/WAIT format defined above. Here's the quick reference:**
 
 ```
-📌 EXECUTIVE SUMMARY
+SIGNAL OUTPUT → When Confluence ≥ 4 points:
+─────────────────────────────────────────────
+🚀 SIGNAL: [ASSET]
+📶 Direction: LONG/SHORT
+🎯 Entry: $[Price]
+🛑 Stop Loss: $[Price] ([X%])
+🏆 Targets: TP1, TP2, TP3
+💰 Risk: Leverage, Position, R:R
+📊 Confluence Rationale: Layer 1, 2, 3 status
+🔗 Confluence Score: [X]/9
+
+WAIT OUTPUT → When Confluence < 4 points:
+─────────────────────────────────────────────
+⏸️ WAIT: [ASSET]
+📊 Current Price: $[Price]
+🔍 Reason: Why no signal
+📋 Layer Status: Each layer status
+📋 Watching For: Conditions needed
+🔗 Confluence Score: [X]/9
+```
+
+### 6-Pillar Analysis Summary (Internal Use)
+
+```
+5_PILLAR_SUMMARY:
 ════════════════════════════════════════════════════════
-📋 Task: SMC Analysis for [ASSET]
-📝 Bottom Line: [Bullish/Bearish] structure on 4H, [alignment status] on 1H. [Setup quality assessment]
+Asset: [SYMBOL]
+Timestamp: [ISO]
 
-📊 Key Metrics:
-  • Current Price: $[EXACT price from chart]
-  • 4H Trend: [BULLISH / BEARISH / RANGING]
-  • 1H Alignment: [✅ ALIGNED / ❌ CONFLICTING]
-  • POI Zone: $[EXACT upper] - $[EXACT lower] ([OB/FVG/Confluence])
-  • Entry: $[EXACT price]
-  • Stop Loss: $[EXACT price]
-  • TP1: $[EXACT] | TP2: $[EXACT] | TP3: $[EXACT]
-  • R:R Ratio: [X:1]
-  • POC Level: $[EXACT from Volume Profile]
+LAYER 1 - SMC CORE:
+  verdict: [BULLISH_BIAS / BEARISH_BIAS / NO_CLEAR_STRUCTURE]
+  confidence: [0.0-1.0]
+  htf_trend: [BULLISH / BEARISH / RANGING]
+  ltf_alignment: [ALIGNED / CONFLICTING]
+  poi: [OB / FVG / OB+FVG] at $[zone]
+  liquidity_swept: [YES / NO]
+  points: [X]/4
 
-📈 Indicator Consensus: [CONFIRMED (4/4) / WEAK (3/4) / NO MATCH (≤2/4)]
-  • Structure (LuxAlgo): [✅/❌] BOS/CHoCH confirmed
-  • Liquidity Sweep: [✅/❌] Recent sweep detected
-  • POI Valid: [✅/❌] Unmitigated zone
-  • Volume (POC): [✅/❌] Aligned with entry
+LAYER 2 - INDICATOR LOGIC:
+  verdict: [CONFIRMED / PARTIAL / REJECTED]
+  confidence: [0.0-1.0]
+  fib_ote: [IN_ZONE / ABOVE / BELOW]
+  rsi_divergence: [BULLISH / BEARISH / NONE]
+  volume_poc_aligned: [YES / NO]
+  points: [X]/3
 
-⚡ Action: [LONG at $X / SHORT at $X / WAIT for alignment / NO TRADE]
+LAYER 3 - RISK MANAGEMENT:
+  verdict: [EXECUTABLE / ADJUST_REQUIRED / REJECTED]
+  confidence: [0.0-1.0]
+  entry: $[price]
+  stop_loss: $[price] ([X%] distance)
+  leverage: [X]x (capped at 20x)
+  position_usd: $[X]
+  rr_ratio: 1:[X]
+  points: [X]/2
 
-🛡️ Risk: Invalidation at $[EXACT price] ([X%] from entry)
+LAYER 4 - SOCIAL SENTIMENT:
+  verdict: [ALIGNED / CONTRARIAN_WARNING / NEUTRAL]
+  confidence: [0.0-1.0]
+  sentiment_score: [1-10]
+  interpretation: [EXTREME_FEAR / FEAR / NEUTRAL / GREED / EXTREME_GREED]
+  influencer_signals: [X detected]
+  hype_volume: [LOW / MEDIUM / HIGH]
+  contrarian_flag: [YES / NO]
+  points: [X]/2
 
-MTF CONSENSUS: [✅ PROCEED / ❌ MARKET DISCONNECT]
+LAYER 5 - ON-CHAIN INTEL:
+  verdict: [ACCUMULATION_CONFIRMED / DISTRIBUTION_WARNING / NEUTRAL / WHALE_DIVERGENCE]
+  confidence: [0.0-1.0]
+  onchain_score: [1-10]
+  interpretation: [HEAVY_ACCUMULATION / LIGHT_ACCUMULATION / NEUTRAL / LIGHT_DISTRIBUTION / HEAVY_DISTRIBUTION]
+  whale_transactions: [X detected over $500K]
+  exchange_flow: [INFLOW / OUTFLOW / BALANCED]
+  smart_money_direction: [BUYING / SELLING / NEUTRAL]
+  whale_confirmed: [YES / NO]
+  points: [X]/2
+
+TOTAL CONFLUENCE: [X]/15 points
+SIGNAL STATUS: [STRONG / MODERATE / WEAK / NO SIGNAL]
+CONFIDENCE LEVEL: [NORMAL / EXTREME (if whale-confirmed)]
+OUTPUT: [SIGNAL / WAIT]
 ════════════════════════════════════════════════════════
 ```
 
-### Indicator Consensus Interpretation
+### 6-Pillar Confluence Interpretation
 
 ```
-CONFIRMED (4/4):
-  → All four pillars verified by indicators
+STRONG SIGNAL (13-15/15 points):
+  → All six layers strongly confirmed
   → High-probability setup
-  → Full position size allowed
+  → Full position size allowed (100%)
+  → If whale-confirmed: +25% (125%)
+  → Proceed with SIGNAL
 
-WEAK (3/4):
-  → One pillar missing or unverified
-  → Proceed with caution
-  → Reduce position size by 50%
+MODERATE SIGNAL (10-12/15 points):
+  → Most criteria met, minor gaps
+  → Good probability setup
+  → Reduced position size (75%)
+  → Proceed with SIGNAL
 
-NO MATCH (≤2/4):
-  → Setup does not meet Gold Standard
+WEAK SIGNAL (7-9/15 points):
+  → Minimum threshold met
+  → Borderline setup
+  → Reduced position size (50%)
+  → Proceed with CAUTION
+
+NO SIGNAL (< 7/15 points):
+  → Insufficient confluence
   → DO NOT TRADE
-  → Wait for better confluence
+  → Output WAIT with reasons
+  → Wait for better conditions
+```
+
+### Skill File Paths (Layer Integration)
+
+```
+6-PILLAR_SKILL_FILES:
+═══════════════════════════════════════════════════════════════
+BASE_PATH: C:\MainAgent\skills\
+
+ORCHESTRATOR:
+  market-intelligence\SKILL.md     ← THIS FILE (coordinates all layers)
+
+LAYER 1 - SMC CORE:
+  smc-core\SKILL.md                ← Market structure analysis
+  → BOS, CHoCH, Order Blocks, FVGs
+  → HTF/LTF alignment
+  → Liquidity analysis
+
+LAYER 2 - INDICATOR LOGIC:
+  indicator-logic\SKILL.md         ← Technical validation
+  → Fibonacci OTE (0.618-0.786)
+  → RSI Divergence
+  → Volume Profile
+
+LAYER 3 - RISK MANAGEMENT:
+  risk-management\SKILL.md         ← Execution math
+  → Leverage calculation
+  → Position sizing
+  → R:R validation
+
+LAYER 4 - SOCIAL SENTIMENT:
+  social-sentiment\SKILL.md        ← Live X sentiment
+  → Twitter scraping
+  → Influencer detection
+  → Contrarian analysis
+
+LAYER 5 - ON-CHAIN INTEL:
+  on-chain-intel\SKILL.md          ← Whale & Smart Money
+  → Whale transaction tracking
+  → Exchange flow analysis
+  → Smart money detection
+  → High-conviction rule
+
+LAYER 6 - FUNDAMENTAL INTEL:
+  fundamental-intel\SKILL.md       ← News & Catalyst Tracking
+  → RSS/News feed monitoring
+  → Catalyst detection (listings, partnerships)
+  → Negative news veto (hacks, delistings)
+  → Event timeline tracking
+
+═══════════════════════════════════════════════════════════════
 ```
 
 ### Path Constants
 
 ```
 BASE_PATH:    C:\MainAgent
+Skills:       C:\MainAgent\skills\
 Screenshots:  C:\MainAgent\screenshots\trading\
 Logs:         C:\MainAgent\logs\
 Memory:       C:\MainAgent\memory\
 Config:       C:\MainAgent\config\
+Sessions:     C:\MainAgent\sessions\
 ```
 
 ### Browser Settings (MANDATORY)

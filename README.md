@@ -1,170 +1,193 @@
-# Unified WhatsApp Agent
+# Unified WhatsApp Trading Agent
 
-A powerful WhatsApp bot that connects to Claude Code CLI for autonomous task execution with browser automation, intelligent task processing, and multi-persona support.
+A powerful autonomous trading intelligence system with WhatsApp integration, Claude CLI execution, and a 6-pillar confluence trading framework. Self-driven market discovery via direct Binance API with intelligent filtering and signal lifecycle management.
+
+## System Overview
+
+```
+                                  UNIFIED TRADING AGENT ARCHITECTURE
+
+ ╔═══════════════════════════════════════════════════════════════════════════════════════╗
+ ║                                                                                       ║
+ ║   ┌─────────────────┐                    ┌─────────────────────────────────────────┐  ║
+ ║   │   WhatsApp      │◄──── Signals ──────│         BINANCE ENGINE v3.1             │  ║
+ ║   │   (User)        │                    │         ════════════════════            │  ║
+ ║   └────────┬────────┘                    │  ┌─────────────────────────────────┐    │  ║
+ ║            │                             │  │ Market Scanner (10min cycle)    │    │  ║
+ ║            │ Commands                    │  │ → Volume, RVOL, Momentum filter │    │  ║
+ ║            ▼                             │  └───────────────┬─────────────────┘    │  ║
+ ║   ┌─────────────────┐                    │                  ▼                      │  ║
+ ║   │   Bridge        │                    │  ┌─────────────────────────────────┐    │  ║
+ ║   │   Orchestrator  │                    │  │ Smart Filter (Memory Check)     │    │  ║
+ ║   │   + Personas    │                    │  │ → Mute check, Time/Price delta  │    │  ║
+ ║   └────────┬────────┘                    │  └───────────────┬─────────────────┘    │  ║
+ ║            │                             │                  ▼                      │  ║
+ ║            ▼                             │  ┌─────────────────────────────────┐    │  ║
+ ║   ┌─────────────────┐                    │  │ Signal Gatekeeper               │    │  ║
+ ║   │   Claude CLI    │────── Triggers ───►│  │ → Daily limit, Active trades    │    │  ║
+ ║   │   + Skills      │                    │  └───────────────┬─────────────────┘    │  ║
+ ║   └─────────────────┘                    │                  ▼                      │  ║
+ ║                                          │  ┌─────────────────────────────────┐    │  ║
+ ║                                          │  │ 6-Pillar Analysis               │    │  ║
+ ║                                          │  │ → 75% confidence threshold      │    │  ║
+ ║                                          │  └─────────────────────────────────┘    │  ║
+ ║                                          └─────────────────────────────────────────┘  ║
+ ║                                                                                       ║
+ ╚═══════════════════════════════════════════════════════════════════════════════════════╝
+```
 
 ## Features
 
+### Trading System
+- **Binance Engine v3.1**: Self-driven market discovery via direct Binance API
+- **6-Pillar Confluence**: SMC, Indicators, Risk, Sentiment, On-Chain, Fundamentals
+- **Smart Memory Filter**: Prevents redundant analysis with time/price delta checks
+- **Signal Gatekeeper**: Daily direction limits and active trade blocking
+- **4-Hour Mute System**: Cooldown after WAIT results or low confidence
+- **75% Confidence Threshold**: Only high-conviction signals sent to WhatsApp
+- **Trade Lifecycle Tracking**: Automatic SL/TP monitoring with status updates
+
+### Core Features
 - **WhatsApp Integration**: Full WhatsApp Web connection via whatsapp-web.js
-- **Claude CLI Execution**: Autonomous task execution with real-time streaming output
-- **Multi-Persona System**: Context-aware personas (TradingExpert, Dev, General) based on group
-- **Native Skills**: Four core autonomous skills with SKILL.md instruction format
-- **Browser Automation**: Stealth Playwright with anti-detection and headed mode
-- **Smart Task Detection**: Automatic detection of web-related tasks for browser enablement
-- **AI Summarization**: OpenRouter integration for intelligent response formatting
+- **Claude CLI Execution**: Autonomous task execution with real-time streaming
+- **Multi-Persona System**: Context-aware routing (TradingExpert, Dev, General)
+- **Browser Automation**: Stealth Playwright with anti-detection
+- **Knowledge Base**: SQLite learning with persona-scoped memory
 - **Guard System**: Command classification (GREEN/YELLOW/RED) for security
-- **Knowledge Base**: SQLite-based learning with persona-scoped memory
-- **Self-Correction**: Autonomous DOM failure analysis and selector updates
-- **Tactical Planning**: Structured execution plans with WhatsApp progress signals
 
 ## Security Notice
 
-> **All sensitive data is strictly excluded via `.gitignore`.**
+> **All sensitive data is excluded via `.gitignore`.**
 >
-> The following are NEVER committed:
-> - WhatsApp session tokens (`sessions/`)
-> - Local databases (`data/*.db`, `memory/*.db`)
+> - WhatsApp sessions (`sessions/`)
+> - Databases (`data/*.db`, `memory/*.db`)
 > - Environment variables (`.env`)
 > - API keys and credentials
 
-## Architecture
+---
+
+## Trading System Components
+
+### 1. Binance Engine (v3.1)
+
+The central hub for autonomous market discovery and signal management.
 
 ```
-┌─────────────────┐     Webhook      ┌─────────────────┐     spawn      ┌─────────────────┐
-│  WhatsApp API   │ ───────────────> │     Bridge      │ ─────────────> │   Claude CLI    │
-│   (port 3000)   │                  │   (port 3001)   │                │                 │
-│                 │ <─────────────── │                 │ <───────────── │  + Native Skills│
-│ whatsapp-web.js │     Response     │  Orchestrator   │    stdout      │  + Playwright   │
-└─────────────────┘                  └─────────────────┘                └─────────────────┘
-        │                                    │
-        │ QR Code                            │ Persona Router
-        v                                    v
-   ┌─────────┐                    ┌──────────────────────┐
-   │ Terminal│                    │  Guard + Knowledge   │
-   └─────────┘                    │  + Personas + AI     │
-                                  └──────────────────────┘
+BINANCE ENGINE PIPELINE:
+════════════════════════════════════════════════════════════════════
+
+   ┌──────────────────┐
+   │  MARKET SCANNER  │  Every 10 minutes
+   │  647 USDT pairs  │
+   └────────┬─────────┘
+            │ Volume ≥ $20M, Change ≥ 3%
+            ▼
+   ┌──────────────────┐
+   │  RVOL FILTER     │  Relative Volume > 1.5
+   └────────┬─────────┘
+            │ ~5-15 candidates
+            ▼
+   ┌──────────────────┐
+   │  SMART FILTER    │  Memory check
+   │  Rule 0: MUTE    │  4h cooldown after WAIT
+   │  Rule 1: NEW     │  First-time asset
+   │  Rule 2: TIME    │  >4h since analysis
+   │  Rule 3: DELTA   │  >2% price change
+   └────────┬─────────┘
+            │ 2-5 to analyze
+            ▼
+   ┌──────────────────┐
+   │ SIGNAL GATEKEEPER│  Duplicate prevention
+   │  • Daily limit   │  No same-direction repeat
+   │  • Active trade  │  Block if SL/TP not hit
+   └────────┬─────────┘
+            │
+            ▼
+   ┌──────────────────┐
+   │  6-PILLAR        │  Full confluence check
+   │  ANALYSIS        │  75% threshold (12+ points)
+   └────────┬─────────┘
+            │
+            ├─── SIGNAL ≥75% ──► WhatsApp + Record
+            │
+            └─── WAIT <75% ────► Mute 4 hours (no message)
+
+════════════════════════════════════════════════════════════════════
 ```
 
-## Persona System
+#### CLI Commands
 
-The agent automatically routes messages to specialized personas based on WhatsApp group context.
+```bash
+# Market scanning
+npm run binance:scan           # Basic scan
+npm run binance:smart-scan     # Full pipeline with memory
 
-### Available Personas
+# Analysis history
+npm run binance:history        # View analyzed assets
+npm run binance:check          # Check specific symbol
+npm run binance:observations   # View observation list
 
-| Persona | Trigger Groups | Focus | Allowed Skills |
-|---------|---------------|-------|----------------|
-| **TradingExpert** | "Trading Expert*", "Trade Analysis*" | Market intelligence, technical analysis | web-operator, market-intelligence, tactical-planning, self-correction |
-| **Trading** | "Trading*", "Crypto*", "BTC*", "ETH*" | Price monitoring, news | web-operator, market-intelligence, tactical-planning |
-| **Dev** | "Dev*", "Development*", "Code*" | Full development access | all skills |
-| **General** | All other groups | Web browsing, Q&A | web-operator |
+# Signal management
+npm run signals                # View signal history
+npm run signals:active         # View active signals only
+npm run signals:gatekeeper     # Check gatekeeper status
+npm run signals:monitor        # Single status check
+npm run signals:monitor-start  # Start background monitor
 
-### Persona Routing Flow
-
-```
-WhatsApp Message (from "Crypto Signals" group)
-         ↓
-PersonaRouter.route("Crypto Signals")
-         ↓
-Match: ".*Crypto.*" → Trading persona
-         ↓
-Inject Trading system prompt + priority skill
-         ↓
-Claude executes with trading context
-         ↓
-Save to KnowledgeBase with category="trading"
+# Mute management (via binance-client.js)
+node scripts/binance-client.js muted           # View muted assets
+node scripts/binance-client.js mute BTCUSDT    # Manually mute
+node scripts/binance-client.js unmute BTCUSDT  # Remove mute
+node scripts/binance-client.js check-confidence 12  # Check threshold
 ```
 
-### Configuration
+### 2. 6-Pillar Confluence System
 
-**Group Mappings** (`config/group-mappings.json`):
-```json
-{
-  "mappings": [
-    { "groupNamePattern": "^Trading\\s*Expert.*", "persona": "TradingExpert", "priority": 1 },
-    { "groupNamePattern": "^Trading.*|.*Crypto.*", "persona": "Trading", "priority": 2 },
-    { "groupNamePattern": "^Dev.*|.*Code.*", "persona": "Dev", "priority": 3 },
-    { "groupNamePattern": ".*", "persona": "General", "priority": 99 }
-  ],
-  "groupIdOverrides": {
-    "specific_group_id@g.us": "TradingExpert"
-  }
-}
+```
+6-PILLAR SCORING (15 points max):
+════════════════════════════════════════════════════════════════════
+
+PILLAR 1: SMC CORE (4 points)
+  ☐ HTF (4H) trend clear (BOS confirmed)        +1
+  ☐ LTF (1H) aligned with HTF                   +1
+  ☐ Unmitigated POI (Order Block/FVG)           +1
+  ☐ Liquidity sweep confirmed                    +1
+
+PILLAR 2: INDICATOR LOGIC (3 points)
+  ☐ Fibonacci OTE zone (0.618-0.786)            +1
+  ☐ RSI divergence or extreme reading           +1
+  ☐ Volume Profile POC alignment                 +1
+
+PILLAR 3: RISK MANAGEMENT (2 points)
+  ☐ R:R ratio ≥ 1:2                             +1
+  ☐ Leverage ≤ 20x (valid calculation)          +1
+
+PILLAR 4: SOCIAL SENTIMENT (2 points)
+  ☐ Sentiment aligned with technical bias        +1
+  ☐ No contrarian warning                        +1
+
+PILLAR 5: ON-CHAIN INTEL (2 points)
+  ☐ On-chain flow aligned with bias              +1
+  ☐ No whale divergence warning                  +1
+
+PILLAR 6: FUNDAMENTAL INTEL (2 points)
+  ☐ No negative news veto                        +1
+  ☐ Positive catalyst OR neutral                 +1
+
+════════════════════════════════════════════════════════════════════
+CONFIDENCE THRESHOLDS:
+  13-15 pts (87-100%) → STRONG SIGNAL (full position)
+  12 pts (80%)        → MODERATE SIGNAL (75% position)
+  11 pts (73%)        → WAIT + 4h mute (no message)
+  <11 pts (<73%)      → WAIT + 4h mute (no message)
+
+MINIMUM: 75% confidence (12+ points) for ANY signal
+════════════════════════════════════════════════════════════════════
 ```
 
-**Personas** (`config/personas.json`):
-```json
-{
-  "TradingExpert": {
-    "systemPrompt": "You are an expert cryptocurrency analyst...",
-    "allowedSkills": ["web-operator", "market-intelligence", "tactical-planning"],
-    "guardPolicy": "trading",
-    "memoryScope": "trading",
-    "prioritySkill": "market-intelligence"
-  }
-}
-```
+### 3. Signal Output Format
 
-## Native Skills
-
-Four autonomous skills are available in the `skills/` directory, using SKILL.md instruction format:
-
-### 1. web-operator - Stealth Browser Automation
-
-**Triggers:** "browse website", "open Binance", "check crypto prices", "take screenshot"
-
-**Features:**
-- Headed mode (visible browser) for user monitoring
-- Anti-detection: realistic timing, proper viewport
-- Site-specific selectors for Binance Demo, CoinGecko
-- Popup/notification auto-dismissal
-- TradingView charts accessed via Binance Demo (built-in)
-
-**Platform Rules:**
-- Trading: Use `https://demo.binance.com/en/*` ONLY
-- TradingView.com is FORBIDDEN for trading analysis
-- Real Binance (www.binance.com) is FORBIDDEN
-
-### 2. self-correction - DOM Failure Analysis
-
-**Triggers:** "element not found", "fix selector", "debug web automation"
-
-**Features:**
-- Error categorization (selector_outdated, timeout, dynamic_content, network)
-- Alternative selector finder with confidence scores
-- Permanent fix application via Edit tool
-- Site-specific selector memory
-
-### 3. tactical-planning - Structured Execution Plans
-
-**Triggers:** "create a plan", "plan a mission", "multi-step task"
-
-**Features:**
-- JSON execution plans with success criteria
-- `BRIDGE_SIGNAL:` protocol for WhatsApp progress updates
-- Failure handling strategies (retry, skip, abort, self_correct)
-- Integration with other skills
-
-### 4. market-intelligence - Trading Analysis Framework
-
-**Triggers:** "market analysis", "trade thesis", "chart analysis", "SMC analysis", "price check"
-
-**Platform:** Binance Demo ONLY (`https://demo.binance.com/en/*`)
-
-**Features:**
-- Smart Money Concepts (SMC) analysis framework
-- Risk-Adjusted Signal Protocol (RASP) with leverage calculation
-- Visual browser automation (user sees all actions live)
-- Mandatory indicator setup (EMA 200, RSI, Volume Profile)
-- Popup/notification auto-dismissal
-- KnowledgeBase persistence for future automated execution
-
-**Leverage Formula:**
-```
-Leverage = Max Risk (1-2%) / Distance to Stop Loss (%)
-Cap: 20x maximum
-Position Size = Portfolio × Risk% × Leverage
-```
-
-**SIGNAL Output (conditions met):**
+**When SIGNAL (≥75% confidence):**
 ```
 🚀 **SIGNAL: SOL/USDT**
 
@@ -176,124 +199,164 @@ Position Size = Portfolio × Risk% × Leverage
    • TP2: $212.00 (1:3.86 R:R)
 
 💰 **Risk Management:**
-   • Leverage: 1x
+   • Leverage: 5x
    • Risk: 2%
-   • Position: $20 (of $1000 portfolio)
+   • Position: $100
    • R:R Ratio: 1:3.86
 
-💡 **Rationale:** Bullish BOS on 4H with liquidity sweep at $195
+🛡️ **Confidence:** 80% (threshold: 75%)
+💡 **Rationale:** Bullish BOS on 4H with liquidity sweep
 
-📊 Source: Binance Demo
-🔗 Confluence: 4/5
+📊 Source: Binance API
+🔗 Confluence: 12/15 points
 ```
 
-**WAIT Output (conditions NOT met):**
+**When WAIT (<75% confidence):**
+- NO WhatsApp message sent
+- Asset muted for 4 hours
+- Logged to KnowledgeBase only
+
+---
+
+## Data Storage
+
+### Analysis History (`data/analysis_history.json`)
+```json
+{
+  "assets": {
+    "BTCUSDT": {
+      "symbol": "BTCUSDT",
+      "last_analysis_time": "2026-01-21T18:30:00.000Z",
+      "last_price": 105250.00,
+      "last_rvol": 1.85,
+      "analysis_count": 5,
+      "last_result": {
+        "signal": "WAIT",
+        "confidence": "NORMAL",
+        "confluence_score": 11,
+        "confidence_percent": 73
+      },
+      "mute_until": "2026-01-21T22:30:00.000Z",
+      "mute_reason": "WAIT_RESULT"
+    }
+  }
+}
 ```
-⏸️ **WAIT: SOL/USDT**
 
-📊 Current Price: $198.50
-🔍 Reason: Awaiting liquidity sweep before entry
-
-📋 Watching For:
-   • Price to sweep $195 lows
-
-Next check: 4H candle close
+### Signal History (`data/signals_history.json`)
+```json
+{
+  "signals": [
+    {
+      "id": "SIG_1706912345678_BTCUSDT",
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "status": "Active",
+      "entry_price": 105000,
+      "sl_price": 103000,
+      "tp1_price": 108000,
+      "tp2_price": 110000,
+      "tp3_price": 115000,
+      "confluence_score": 12,
+      "confidence": "MODERATE",
+      "history": [...]
+    }
+  ],
+  "stats": { "total": 15, "wins": 10, "losses": 3, "active": 2 }
+}
 ```
 
-## Components
+### Signal Status Types
+| Status | Description |
+|--------|-------------|
+| `Active` | Trade is open, monitoring SL/TP |
+| `Hit_SL` | Stop loss hit (LOSS) |
+| `Hit_TP1` | First target hit (50% closed) |
+| `Hit_TP2` | Second target hit (30% closed) |
+| `Hit_TP3` | Final target hit (FULL WIN) |
+| `Invalidated` | Market conditions changed |
+| `Closed_Manual` | Manually closed |
 
-### WhatsApp API (`src/whatsapp-api/`)
-- **Port:** 3000
-- **Purpose:** WhatsApp Web connection via whatsapp-web.js
-- **Features:** QR code auth, session persistence, `sendSeen: false` fix
+---
 
-### Bridge (`src/bridge/`)
-- **Port:** 3001
-- **Purpose:** Claude CLI orchestration and response handling
-- **Features:**
-  - Persona routing based on group context
-  - Claude CLI spawning with stream-json output
-  - Playwright MCP for browser automation
-  - AI-powered output summarization
-  - Guard system with persona-specific policies
-  - Knowledge base with scoped memory
+## Skills Directory
 
-### Agent Integration (`src/bridge/agent/`)
-- **PersonaRouter**: Routes messages to personas based on group patterns
-- **AgentIntegration**: Guard + Knowledge + Skills coordination
-- **KnowledgeBase**: SQLite storage with persona-scoped categories
+| Skill | Purpose | Triggers |
+|-------|---------|----------|
+| **binance-engine** | Market scanning, signal management | "scan market", "smart scan" |
+| **market-intelligence** | 6-pillar orchestration | "analyze X", "market analysis" |
+| **smc-core** | Smart Money Concepts | Layer 1 of 6-pillar |
+| **indicator-logic** | Technical indicators | Layer 2 of 6-pillar |
+| **risk-management** | Position sizing, R:R | Layer 3 of 6-pillar |
+| **social-sentiment** | X/Twitter sentiment | Layer 4 of 6-pillar |
+| **on-chain-intel** | Whale tracking | Layer 5 of 6-pillar |
+| **fundamental-intel** | News analysis | Layer 6 of 6-pillar |
+| **web-operator** | Browser automation | "browse", "screenshot" |
+| **self-correction** | DOM failure analysis | "fix selector" |
+| **tactical-planning** | Multi-step execution | "create plan" |
+
+---
+
+## Persona System
+
+Messages are routed to specialized personas based on WhatsApp group context.
+
+| Persona | Trigger Groups | Allowed Skills |
+|---------|---------------|----------------|
+| **TradingExpert** | "Trading Expert*" | market-intelligence, binance-engine, all trading skills |
+| **Trading** | "Trading*", "Crypto*" | web-operator, market-intelligence |
+| **Dev** | "Dev*", "Code*" | All skills |
+| **General** | All others | web-operator only |
+
+---
 
 ## Project Structure
 
 ```
-├── skills/                         # Native Claude Code skills (SKILL.md format)
-│   ├── web-operator/SKILL.md       # Stealth browser automation
-│   ├── self-correction/SKILL.md    # DOM failure analysis
-│   ├── tactical-planning/SKILL.md  # Structured execution plans
-│   └── market-intelligence/SKILL.md # Trading analysis framework
+MainAgent/
+├── skills/                           # Claude Code skills
+│   ├── binance-engine/SKILL.md       # Market scanning hub
+│   ├── market-intelligence/SKILL.md  # 6-pillar orchestrator
+│   ├── smc-core/SKILL.md             # Smart Money Concepts
+│   ├── indicator-logic/SKILL.md      # Technical indicators
+│   ├── risk-management/SKILL.md      # Position sizing
+│   ├── social-sentiment/SKILL.md     # Twitter sentiment
+│   ├── on-chain-intel/SKILL.md       # Whale tracking
+│   ├── fundamental-intel/SKILL.md    # News analysis
+│   ├── web-operator/SKILL.md         # Browser automation
+│   ├── self-correction/SKILL.md      # DOM failure fix
+│   └── tactical-planning/SKILL.md    # Multi-step plans
+│
+├── scripts/
+│   └── binance-client.js             # Binance API utility
+│
 ├── src/
-│   ├── index.js                    # Unified entry point
-│   ├── whatsapp-api/
-│   │   ├── index.js                # WhatsApp API server
-│   │   ├── whatsappService.js      # whatsapp-web.js wrapper
-│   │   └── messageHandler.js       # Message processing
-│   └── bridge/
-│       ├── index.js                # Bridge server entry
-│       ├── app.js                  # Express app setup
-│       ├── core/
-│       │   └── BridgeOrchestrator.js   # Main orchestration + persona routing
-│       ├── claude/
-│       │   ├── CmdExecutor.js          # Claude CLI execution
-│       │   └── SessionManager.js       # Session management
-│       ├── agent/
-│       │   ├── PersonaRouter.js        # Group-to-persona routing
-│       │   ├── AgentIntegration.js     # Guard + Knowledge
-│       │   └── KnowledgeBase.js        # Learning database
-│       ├── ai/
-│       │   └── SummarizerService.js    # Output formatting
-│       └── whatsapp/
-│           ├── WebhookHandler.js       # Webhook processing
-│           └── ResponseSender.js       # Send responses
+│   ├── index.js                      # Unified entry point
+│   ├── bridge/                       # Claude CLI orchestration
+│   │   ├── core/BridgeOrchestrator.js
+│   │   ├── agent/PersonaRouter.js
+│   │   ├── agent/KnowledgeBase.js
+│   │   └── claude/CmdExecutor.js
+│   └── whatsapp-api/                 # WhatsApp connection
+│       └── whatsappService.js
+│
 ├── config/
-│   ├── guard_policy.json           # Command classification rules
-│   ├── personas.json               # Persona definitions
-│   ├── group-mappings.json         # Group → Persona mappings
-│   └── bridge.config.json          # Bridge settings
-├── memory/                         # SQLite knowledge base (persona-scoped)
-└── logs/                           # Application logs
+│   ├── personas.json                 # Persona definitions
+│   ├── group-mappings.json           # Group routing
+│   ├── guard_policy.json             # Security rules
+│   └── scan_results.json             # Latest scan output
+│
+├── data/
+│   ├── analysis_history.json         # Analysis memory
+│   ├── signals_history.json          # Trade tracking
+│   └── observation_list.json         # Watchlist
+│
+├── memory/                           # SQLite databases
+├── sessions/                         # WhatsApp sessions
+└── logs/                             # Application logs
 ```
 
-## Configuration
-
-### Environment Variables (`.env`)
-```bash
-# Server Ports
-PORT=3000
-BRIDGE_PORT=3001
-
-# WhatsApp Settings
-SESSION_PATH=./sessions
-AUTO_CONNECT=true
-
-# Webhook (WhatsApp API -> Bridge)
-WEBHOOK_URL=http://localhost:3001/webhook/whatsapp
-
-# WhatsApp API Connection (Bridge -> WhatsApp API)
-WHATSAPP_API_URL=http://localhost:3000
-
-# Claude CLI Base Path (where skills/ folder is located)
-BASE_PATH=C:\MainAgent
-
-# Browser Mode
-HEADED_MODE=true
-
-# OpenRouter API (for AI summarization)
-OPENROUTER_API_KEY=your-api-key
-OPENROUTER_MODEL=xiaomi/mimo-v2-flash:free
-
-# Admin phones (comma separated)
-ADMIN_PHONES=972501234567
-```
+---
 
 ## Installation
 
@@ -301,111 +364,64 @@ ADMIN_PHONES=972501234567
 # Install dependencies
 npm install
 
-# Install Playwright MCP globally (for browser automation)
-npm install -g @playwright/mcp
-
 # Install Playwright browsers
 npx playwright install chromium
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
 ```
 
 ## Usage
 
-### Start Both Services
 ```bash
+# Start full system (WhatsApp + Bridge)
 npm start
+
+# Start services separately
+npm run start:api      # WhatsApp API (port 3000)
+npm run start:bridge   # Bridge (port 3001)
+
+# Run market scan manually
+npm run binance:smart-scan
 ```
 
-On first run, scan the QR code displayed in terminal with WhatsApp.
+---
 
-### Start Services Separately
+## Environment Variables
+
 ```bash
-# Terminal 1: WhatsApp API
-npm run start:api
+# Server Ports
+PORT=3000
+BRIDGE_PORT=3001
 
-# Terminal 2: Bridge
-npm run start:bridge
+# Paths
+SESSION_PATH=./sessions
+BASE_PATH=C:\MainAgent
+
+# WhatsApp
+WEBHOOK_URL=http://localhost:3001/webhook/whatsapp
+WHATSAPP_API_URL=http://localhost:3000
+
+# Browser
+HEADED_MODE=true
+
+# AI Summarization
+OPENROUTER_API_KEY=your-api-key
+OPENROUTER_MODEL=xiaomi/mimo-v2-flash:free
+
+# Admin
+ADMIN_PHONES=972501234567
 ```
 
-## Message Flow
+---
 
-1. **User sends WhatsApp message** to connected number/group
-2. **WhatsApp API** receives message via whatsapp-web.js
-3. **Webhook sent** to Bridge at `/webhook/whatsapp`
-4. **PersonaRouter** matches group name → selects persona
-5. **Guard classifies** command using persona's policy
-6. **Bridge** detects if web task, enables Playwright MCP if needed
-7. **Claude CLI** executes with persona prompt + priority skill
-8. **Skills** may be invoked (market-intelligence for trading, etc.)
-9. **Output processed** and saved to KnowledgeBase (persona-scoped)
-10. **Response sent** back to WhatsApp group
+## Documentation
 
-## Task Examples
+- **[WORKFLOW.md](./WORKFLOW.md)** - Complete trading workflow documentation
+- **[CLAUDE.md](./CLAUDE.md)** - Agent instructions and context
 
-### Trading Analysis (TradingExpert Persona)
-```
-"Analyze SOL/USDT" or "SMC analysis on BTC"
-```
-- Routes to TradingExpert persona
-- Uses market-intelligence skill (priority)
-- Opens Binance Demo with visual browser (user watches live)
-- Dismisses popups, sets up indicators (EMA 200, RSI)
-- Outputs SIGNAL or WAIT format with leverage calculation
-- Saves signal data to KnowledgeBase for future automation
-
-### Development Task (Dev Persona)
-```
-"Fix the bug in the login component"
-```
-- Routes to Dev persona
-- Full skill access
-- Standard guard policy
-
-### General Query (General Persona)
-```
-"What's the weather in Tel Aviv?"
-```
-- Routes to General persona
-- Web browsing only
-- Restricted guard policy
-
-## Guard Classification
-
-Commands are classified into safety levels (per persona policy):
-
-| Level | Description | Examples |
-|-------|-------------|----------|
-| **GREEN** | Safe operations | Read files, git status, npm list |
-| **YELLOW** | Sensitive but allowed | npm install, git commit |
-| **RED** | Requires approval | rm commands, git push --force |
-| **BLACKLISTED** | Always blocked | System modification, credential access |
-
-## Logs
-
-Logs are stored in `logs/`:
-- `bridge-YYYY-MM-DD.log` - Bridge activity (includes persona routing)
-- `agent-YYYY-MM-DD.log` - WhatsApp API activity
-- `error-YYYY-MM-DD.log` - Errors
-
-## Troubleshooting
-
-### Persona not detected correctly
-- Check `config/group-mappings.json` patterns
-- Verify group name matches expected pattern (case-insensitive)
-- Check logs for "Persona routing" entries
-
-### Skills not discovered
-- Verify `BASE_PATH` in `.env` points to project root
-- Check that `skills/` folder exists with `SKILL.md` files
-- Skills use SKILL.md format, not TypeScript exports
-
-### WhatsApp messages not sending
-- Ensure the `sendSeen: false` option is set in whatsappService.js
-- Check if WhatsApp session is authenticated (look for "ready" in logs)
-
-### Browser not opening for web tasks
-- Verify Playwright MCP is installed: `npm install -g @playwright/mcp`
-- Check MCP config uses `node` directly, not `npx`
-- Ensure web task keywords are in the command
+---
 
 ## License
 
@@ -413,4 +429,4 @@ Private - All rights reserved
 
 ---
 
-*Built with Claude Code + Native Skills + Playwright MCP + Multi-Persona System*
+*Built with Claude Code + Binance Engine + 6-Pillar Confluence System*

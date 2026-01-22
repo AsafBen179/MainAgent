@@ -83,57 +83,62 @@ Common consent selectors:
 
 ## Site-Specific Configurations
 
-### TradingView (tradingview.com) - DISABLED FOR TRADING
+### TradingView (tradingview.com) - PRIMARY TRADING PLATFORM
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
-║            ⛔ DO NOT USE TRADINGVIEW.COM FOR TRADING ⛔            ║
+║            ✅ TRADINGVIEW.COM - PRIMARY CHART ANALYSIS ✅          ║
 ╠═══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
-║  TradingView.com is DISABLED for all trading analysis.            ║
+║  PRIMARY URL: https://www.tradingview.com/chart/                  ║
 ║                                                                   ║
-║  USE INSTEAD: https://demo.binance.com/en/trade/*                 ║
+║  SESSION AUTH: sessions/tv_auth.json (maintains logged-in state)  ║
 ║                                                                   ║
-║  Binance Demo has TradingView charts BUILT-IN.                    ║
-║  There is NO NEED to visit tradingview.com directly.              ║
-║                                                                   ║
-║  If asked to "analyze on TradingView" → Use Binance Demo instead  ║
-║  If asked to "open TradingView" → Use Binance Demo instead        ║
-║  If asked for "chart analysis" → Use Binance Demo instead         ║
+║  INDICATORS (TV Free Tier - MAX 2):                               ║
+║    1. Smart Money Concepts [LuxAlgo]                              ║
+║    2. Liquidity Sweeps                                            ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 ```
 
-**REDIRECT ALL TRADING REQUESTS TO BINANCE DEMO:**
+**TRADINGVIEW NAVIGATION:**
 ```
-User says: "Check BTC on TradingView"
-→ Navigate to: https://demo.binance.com/en/trade/BTC_USDT?type=spot
+SYMBOL SEARCH:
+1. Press '/' key to open symbol search
+2. Type symbol (e.g., SOLUSDT, BTCUSDT)
+3. Press Enter to select
 
-User says: "Open TradingView chart for SOL"
-→ Navigate to: https://demo.binance.com/en/trade/SOL_USDT?type=spot
+TIMEFRAME (top bar buttons):
+- 4H: Click [data-value='240'] or button:has-text('4h')
+- 1H: Click [data-value='60'] or button:has-text('1h')
+- 15m: Click [data-value='15'] or button:has-text('15m')
 
-User says: "Analyze ETH/USDT"
-→ Navigate to: https://demo.binance.com/en/trade/ETH_USDT?type=spot
+INDICATORS:
+- Click [data-name='open-indicators-dialog']
+- Search and add: "Smart Money Concepts LuxAlgo"
+- Search and add: "Liquidity Sweeps"
+- Press Escape to close
 ```
 
 ---
 
-## TRADINGVIEW AUTHENTICATION - DEPRECATED
+## TRADINGVIEW AUTHENTICATION
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
-║                   ⛔ SECTION DEPRECATED ⛔                         ║
+║              TRADINGVIEW SESSION AUTHENTICATION                   ║
 ╠═══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
-║  TradingView.com authentication is NO LONGER USED.                ║
+║  Path: sessions/tv_auth.json                                      ║
+║  Env: PLAYWRIGHT_MCP_STORAGE_STATE=sessions/tv_auth.json          ║
 ║                                                                   ║
-║  ALL trading analysis MUST use Binance Demo:                      ║
-║  https://demo.binance.com/en/trade/*                              ║
+║  To capture TradingView authentication:                           ║
+║  node scripts/capture-tv-auth.js                                  ║
 ║                                                                   ║
-║  For Binance Demo authentication, run:                            ║
-║  node scripts/capture-binance-auth.js                             ║
-║                                                                   ║
-║  DO NOT use capture-tv-auth.js for trading analysis.              ║
+║  Session maintains:                                               ║
+║  - Logged-in state                                                ║
+║  - Saved chart layouts                                            ║
+║  - Indicator configurations                                       ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 ```
@@ -164,20 +169,20 @@ Price Chart:     #coin-price-chart
 - Wait 2s for price updates (they animate)
 - Scroll down to load additional sections
 
-### Binance DEMO (demo.binance.com) - PRIMARY TRADING PLATFORM
+### Binance DEMO (demo.binance.com) - PAPER TRADING ONLY
 
-**⚠️ BINANCE DEMO IS THE ONLY PERMITTED EXECUTION ENVIRONMENT**
+**⚠️ FOR PAPER TRADE EXECUTION ONLY - NOT FOR CHART ANALYSIS**
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
-║                    CRITICAL SAFETY RULE                           ║
+║              BINANCE DEMO - PAPER TRADING ENVIRONMENT             ║
 ╠═══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
-║  ✅ ONLY USE: https://demo.binance.com/en/*                       ║
+║  📊 CHART ANALYSIS: Use TradingView (www.tradingview.com/chart)   ║
+║  📈 PAPER TRADING: Use Binance Demo (demo.binance.com)            ║
+║                                                                   ║
 ║  ❌ NEVER USE: https://www.binance.com/* (REAL MONEY)             ║
 ║  ❌ NEVER USE: https://binance.com/* (REAL MONEY)                 ║
-║                                                                   ║
-║  If URL does not start with "demo.binance.com" → ABORT            ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 ```

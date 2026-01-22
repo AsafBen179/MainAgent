@@ -1,0 +1,41 @@
+{
+  "assets": {
+    "BTCUSDT": {
+      "symbol": "BTCUSDT",
+      "last_analysis_time": "2026-01-21T23:40:27.006Z",
+      "last_price": 100000,
+      "last_rvol": 1.5,
+      "analysis_count": 1,
+      "last_result": {
+        "signal": "WAIT",
+        "confidence": "NORMAL",
+        "confluence_score": 8
+      }
+    },
+    "ZECUSDT": {
+      "symbol": "ZECUSDT",
+      "last_analysis_time": "2026-01-21T23:41:16.525Z",
+      "last_price": 359.41,
+      "last_rvol": 1.26,
+      "analysis_count": 1,
+      "last_result": {
+        "signal": "WAIT",
+        "confidence": "NORMAL",
+        "confluence_score": 7
+      }
+    },
+    "DOGEUSDT": {
+      "symbol": "DOGEUSDT",
+      "last_analysis_time": "2026-01-21T23:41:16.531Z",
+      "last_price": 0.12695,
+      "last_rvol": 1.19,
+      "analysis_count": 1,
+      "last_result": {
+        "signal": "SIGNAL",
+        "confidence": "MODERATE",
+        "confluence_score": 11
+      }
+    }
+  },
+  "lastUpdated": "2026-01-21T23:41:16.531Z"
+}

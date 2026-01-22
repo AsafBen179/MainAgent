@@ -211,8 +211,8 @@ class CmdExecutor {
         USERPROFILE: process.env.CLAUDE_USER_PROFILE || 'C:\\Users\\asaf1',
         HOME: process.env.CLAUDE_USER_PROFILE || 'C:\\Users\\asaf1',
         CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR || 'C:\\Users\\asaf1\\.claude',
-        // Load Binance auth session for Playwright MCP browser automation
-        PLAYWRIGHT_MCP_STORAGE_STATE: process.env.PLAYWRIGHT_MCP_STORAGE_STATE || path.join(this.basePath, 'sessions', 'binance_auth.json')
+        // Load TradingView auth session for Playwright MCP browser automation
+        PLAYWRIGHT_MCP_STORAGE_STATE: process.env.PLAYWRIGHT_MCP_STORAGE_STATE || path.join(this.basePath, 'sessions', 'tv_auth.json')
       };
 
       // Run from BASE_PATH so Claude discovers skills/ folder

@@ -1,0 +1,78 @@
+{
+  "timestamp": "2026-01-21T23:41:50.296Z",
+  "type": "SMART_SCAN",
+  "criteria": {
+    "minVolume": 10000000,
+    "minChange24h": 2,
+    "minChange4h": 0.5,
+    "rvolThreshold": 0.8
+  },
+  "smartFilterConfig": {
+    "analysisExpireHours": 4,
+    "priceChangeThreshold": 0.02
+  },
+  "totalPairsScanned": 647,
+  "passedScoutFilter": 4,
+  "passedSmartFilter": 2,
+  "skippedBySmartFilter": 2,
+  "toAnalyze": [
+    {
+      "symbol": "VIRTUALUSDT",
+      "price": 0.8438,
+      "priceChange24h": 5.016,
+      "volume24h": 23272407.65832,
+      "high24h": 0.8692,
+      "low24h": 0.7871,
+      "trades": 278622,
+      "change4h": -1.61,
+      "rvol": 1.07,
+      "currentHourVolume": 1041835.21243,
+      "filterReason": "NEW_ASSET"
+    },
+    {
+      "symbol": "WIFUSDT",
+      "price": 0.34,
+      "priceChange24h": 2.719,
+      "volume24h": 15103973.77605,
+      "high24h": 0.351,
+      "low24h": 0.322,
+      "trades": 71728,
+      "change4h": -1.16,
+      "rvol": 1.01,
+      "currentHourVolume": 630179.43209,
+      "filterReason": "NEW_ASSET"
+    }
+  ],
+  "skipped": [
+    {
+      "symbol": "ZECUSDT",
+      "price": 359.37,
+      "priceChange24h": 3.238,
+      "volume24h": 86523202.91527,
+      "high24h": 375.98,
+      "low24h": 347.83,
+      "trades": 293300,
+      "change4h": -3.51,
+      "rvol": 1.27,
+      "currentHourVolume": 4456794.9883,
+      "filterReason": "NO_SIGNIFICANT_CHANGE"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "price": 0.12691,
+      "priceChange24h": 2.728,
+      "volume24h": 116487095.87063,
+      "high24h": 0.12884,
+      "low24h": 0.12029,
+      "trades": 1380327,
+      "change4h": -0.93,
+      "rvol": 1.19,
+      "currentHourVolume": 5621357.78245,
+      "filterReason": "NO_SIGNIFICANT_CHANGE"
+    }
+  ],
+  "observations": [
+    "ZECUSDT",
+    "DOGEUSDT"
+  ]
+}

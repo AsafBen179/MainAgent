@@ -107,14 +107,98 @@ Persona config: `config/personas.json` - includes system prompts, allowed skills
 
 Skills use SKILL.md format (instructions, not executable code). Claude reads these and uses available tools:
 
+### Core Skills
 - **web-operator**: Uses `mcp__playwright__*` tools for browser automation
 - **self-correction**: Analyzes DOM failures, updates selectors using Edit tool
 - **tactical-planning**: Creates structured plans with `BRIDGE_SIGNAL:` prefixes for WhatsApp
-- **market-intelligence**: SMC (Smart Money Concepts) analysis framework for trading groups
+
+### Trading Skills (5-Pillar Confluence System)
+- **market-scanner** (Scout): PRIMARY ENTRY POINT for all trading workflows - discovers assets, manages watchlists, triggers analysis
+- **market-intelligence** (Orchestrator): Coordinates 5-pillar analysis
+- **smc-core**: Layer 1 - Market structure (BOS, CHoCH, Order Blocks, FVGs)
+- **indicator-logic**: Layer 2 - Technical validation (Fibonacci, RSI, Volume)
+- **risk-management**: Layer 3 - Execution math (leverage, position sizing)
+- **social-sentiment**: Layer 4 - Live X sentiment analysis
+- **on-chain-intel**: Layer 5 - Whale & smart money tracking
 
 Skills are discovered from `skills/` directory when Claude CLI runs with `cwd: BASE_PATH`.
 
-**Priority Skills:** TradingExpert persona has `market-intelligence` as priority skill - Claude should use this skill first for trading analysis requests.
+**Priority Skills:** TradingExpert persona uses `market-scanner` (Scout) as primary entry point, which triggers `market-intelligence` for 5-pillar analysis.
+
+---
+
+## SCOUT MODULE - Asset Discovery System
+
+**The Scout is the primary entry point for all trading workflows.**
+
+### Overview
+The Scout module (`skills/market-scanner/SKILL.md`) automatically discovers high-potential assets and triggers the 5-pillar analysis pipeline.
+
+### Hard Rule: Binance Only
+- Scout ONLY considers assets available on **Binance (USDT Pairs)**
+- Assets from DexScreener or social media NOT on Binance are **DISCARDED**
+- Minimum volume threshold: $10M USD (24H)
+
+### Discovery Streams
+| Stream | Polling | Criteria |
+|--------|---------|----------|
+| Volume Leaders | Every 4H | Top 10 by 24H volume |
+| Top Gainers | Every 4H | >$20M volume, >5% gain |
+| Top Losers | Every 4H | >$20M volume, >5% drop |
+| New Listings | Daily | Listed <30 days, >$10M volume |
+| TV Screener Alerts | Real-time | RSI <30/>70, 4H Change >3% |
+
+### Commands
+```bash
+# Initialize Scout (creates watchlist, syncs Binance whitelist)
+npm run scout:init
+
+# Setup TradingView screener alerts
+npm run scout:setup-tv
+
+# Manual scan (refresh all streams)
+npm run scout:scan
+```
+
+### Files
+| File | Purpose |
+|------|---------|
+| `config/dynamic_watchlist.json` | Dynamic watchlist with all discovery data |
+| `scripts/scout-init.js` | Watchlist initialization |
+| `scripts/setup-tv-screener.js` | TradingView screener automation |
+
+### TradingView Webhook
+- Endpoint: `POST /webhook/tv-alert`
+- Receives screener alerts from TradingView
+- Validates against Binance whitelist
+- Triggers 5-pillar analysis for valid assets
+
+### Watchlist Structure
+```json
+{
+  "binance_whitelist": { "pairs": ["BTCUSDT", ...] },
+  "active_watchlist": { "assets": [...] },
+  "volume_leaders": { "assets": [...] },
+  "top_gainers": { "assets": [...] },
+  "top_losers": { "assets": [...] },
+  "new_listings": { "assets": [...] },
+  "alert_triggers": { "pending_analysis": [...] },
+  "blacklist": { "assets": ["USDCUSDT", ...] }
+}
+```
+
+### Scout → Analysis Flow
+```
+TradingView Alert → Webhook (/webhook/tv-alert)
+                         ↓
+              Validate against Binance whitelist
+                         ↓
+              Add to pending_analysis queue
+                         ↓
+              Trigger market-intelligence (5-Pillar)
+                         ↓
+              SIGNAL or WAIT → WhatsApp
+```
 
 ## Web Task Detection
 
@@ -336,20 +420,29 @@ POSITION SIZING ($1,000 portfolio):
 Position = Portfolio × Risk% × Leverage
 ```
 
-#### Decision Tree: SIGNAL vs WAIT
+#### Decision Tree: SIGNAL vs WAIT (5-Pillar)
 ```
 [SIGNAL] - Output full signal when:
-  ✅ HTF trend clear
-  ✅ LTF aligned with HTF
-  ✅ Liquidity sweep confirmed
-  ✅ Confluence ≥ 4/5
-  ✅ R:R ≥ 1:2
-  ✅ EMA 200 aligned
+  ✅ Layer 1: HTF trend clear, LTF aligned
+  ✅ Layer 2: 2/3 indicator confirmations
+  ✅ Layer 3: R:R ≥ 1:2, leverage ≤ 20x
+  ✅ Layer 4: Sentiment aligned (no contrarian warning)
+  ✅ Layer 5: On-chain aligned (no whale divergence)
+  ✅ Confluence ≥ 6/13 points
 
 [WAIT] - Output single reason when:
-  ❌ ANY check fails
+  ❌ ANY hard requirement fails
   → "WAIT: [reason]"
   → NO entry/SL/TP/leverage
+
+SIGNAL THRESHOLDS:
+  11-13 points → 🟢 STRONG (100% position)
+  8-10 points  → 🟡 MODERATE (75% position)
+  6-7 points   → 🟠 WEAK (50% position)
+  < 6 points   → 🔴 NO SIGNAL → WAIT
+
+HIGH-CONVICTION MODIFIER:
+  If SMC BULLISH + Whale ACCUMULATION (≥8) → EXTREME confidence (+25% position)
 ```
 
 #### Data Persistence (CRITICAL)
@@ -371,7 +464,7 @@ BRIDGE_SIGNAL:SIGNAL_SAVE
 }
 ```
 
-#### WhatsApp Signal Format
+#### WhatsApp Signal Format (5-Pillar)
 ```
 🚀 **SIGNAL: [ASSET]**
 
@@ -379,35 +472,57 @@ BRIDGE_SIGNAL:SIGNAL_SAVE
 🎯 **Entry:** $[Price]
 🛑 **Stop Loss:** $[Price] ([X%] risk)
 🏆 **Targets:**
-   • TP1: $[Price] (1:[X] R:R)
-   • TP2: $[Price] (1:[X] R:R)
-   • TP3: $[Price] (1:[X] R:R)
+   • TP1: $[Price] (1:2 R:R) - Close 50%
+   • TP2: $[Price] (1:3 R:R) - Close 30%
+   • TP3: $[Price] (1:5 R:R) - Close 20%
 
 💰 **Risk Management:**
    • Leverage: [X]x
-   • Risk: [1-2]%
+   • Risk: 2%
    • Position: $[X] (of $1000 portfolio)
    • R:R Ratio: 1:[X]
 
-💡 **Rationale:** [1-sentence SMC explanation]
+📊 **Confluence Rationale:**
+   Layer 1 (SMC): [✅/❌] [BOS direction, POI type]
+   Layer 2 (Technical): [✅/❌] [OTE/RSI/Volume]
+   Layer 3 (Risk): [✅/❌] [R:R and leverage]
+   Layer 4 (Sentiment): [✅/❌] [X sentiment]
+   Layer 5 (On-Chain): [✅/❌] [Whale activity]
+
+🌐 **Social Pulse:** [Score]/10 - [Key insight from X]
+
+🐋 **Whale Activity:** [Score]/10 - [Summary]
+   [If whale-confirmed: ⭐ WHALE CONFIRMED: High-conviction setup]
 
 ⏰ **Valid Until:** [Invalidation condition]
 
 ───────────────────────────
-📊 Source: Binance Demo
-🔗 Confluence: [X]/5
+📊 Source: TradingView + X + On-Chain
+🔗 Confluence Score: [X]/13 points
+🎯 Signal Strength: [STRONG/MODERATE/WEAK]
 ```
 
-#### WAIT Format
+#### WAIT Format (5-Pillar)
 ```
 ⏸️ **WAIT: [ASSET]**
 
 📊 Current Price: $[Price]
 🔍 Reason: [Single sentence]
 
+📋 Layer Status:
+   Layer 1 (SMC): [✅/❌] [Status]
+   Layer 2 (Technical): [✅/❌] [Status]
+   Layer 3 (Risk): [✅/❌] [Status]
+   Layer 4 (Sentiment): [✅/❌/⚠️] [Status]
+   Layer 5 (On-Chain): [✅/❌/⚠️] [Status]
+
+🌐 **Social Pulse:** [Score]/10 - [Key insight or "N/A"]
+🐋 **Whale Activity:** [Score]/10 - [Summary or "N/A"]
+
 📋 Watching For:
    • [Condition needed]
 
 ───────────────────────────
+Confluence Score: [X]/13 points (need ≥6)
 Next check: [Timeframe]
 ```

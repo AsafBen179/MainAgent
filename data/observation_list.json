@@ -1,0 +1,17 @@
+{
+  "assets": [
+    {
+      "symbol": "ZECUSDT",
+      "added_time": "2026-01-21T23:41:50.293Z",
+      "reason": "Scout criteria met, no significant delta",
+      "check_count": 1
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "added_time": "2026-01-21T23:41:50.294Z",
+      "reason": "Scout criteria met, no significant delta",
+      "check_count": 1
+    }
+  ],
+  "lastUpdated": "2026-01-21T23:41:50.294Z"
+}
